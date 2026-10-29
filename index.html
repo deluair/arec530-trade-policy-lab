@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: only light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade Policy Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a lab bench. Controls on top, the two-panel market diagram (home market | trade market)
+   in the middle, the welfare ledger beside the welfare curve below, then problems, pitfalls, quiz, glossary.
+   Area colors keep the lecture slides' convention: c red hatch, b/d blue, e aqua hatch, a amber. */
+:root {
+  --paper: #f3f6f8;
+  --surface: #ffffff;
+  --ink: #13202a;
+  --ink-2: #44535e;
+  --muted: #74828c;
+  --rule: #d6dee3;
+  --accent: #1d3a5f;
+  --accent-soft: #e2eaf3;
+  --area-a: #eda100;
+  --area-bd: #2a78d6;
+  --area-c: #e34948;
+  --area-e: #1baf7a;
+  --area-fg: #8a96a0;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --good: #0a7d0a;
+  --bad: #c0302f;
+  --font-display: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+  color-scheme: only light;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: 2.3rem; }
+h2 { font-size: 1.55rem; }
+h3 { font-size: 1.12rem; }
+p { margin: 0; }
+a { color: var(--accent); }
+.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header.top { padding: 34px 0 22px; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.top .eyebrow { font-family: var(--font-mono); font-size: .8rem; color: var(--muted); letter-spacing: .04em; }
+.top .lede { max-width: 68ch; color: var(--ink-2); margin-top: 10px; }
+.top-grid { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 16px; font-size: .92rem; }
+nav.toc a { text-decoration: none; border-bottom: 1px solid var(--rule); }
+nav.toc a:hover { border-bottom-color: var(--accent); }
+.readings { font-size: .85rem; color: var(--ink-2); border-left: 3px solid var(--rule); padding-left: 12px; max-width: 360px; }
+.readings b { color: var(--ink); }
+
+section { padding: 34px 0 6px; }
+.section-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.section-head p { color: var(--ink-2); max-width: 70ch; }
+
+/* toolkit cards */
+.toolkit { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.tool { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.tool h3 { font-size: 1.05rem; }
+.tool p { font-size: .92rem; color: var(--ink-2); }
+.tool .eq { font-family: var(--font-mono); font-size: .82rem; color: var(--ink); background: var(--accent-soft); border-radius: 4px; padding: 4px 8px; }
+.tool button { align-self: flex-start; margin-top: auto; }
+
+/* lab */
+.lab { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.controls { display: grid; grid-template-columns: auto 1fr; gap: 12px 18px; align-items: center; }
+.ctl-label { font-size: .82rem; color: var(--muted); font-family: var(--font-mono); }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; border-right: 1px solid var(--rule); background: var(--surface); color: var(--ink); padding: 7px 13px; font: 500 .9rem var(--font-body); cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.seg button:hover:not([aria-pressed="true"]) { background: var(--accent-soft); }
+.sliders { display: flex; flex-wrap: wrap; gap: 12px 26px; }
+.slider { display: flex; flex-direction: column; gap: 2px; min-width: 220px; }
+.slider label { font-size: .88rem; display: flex; justify-content: space-between; gap: 10px; }
+.slider output { font-family: var(--font-mono); font-weight: 500; }
+.slider input { width: 100%; accent-color: var(--accent); }
+.btn { border: 1px solid var(--accent); background: var(--surface); color: var(--accent); padding: 6px 13px; border-radius: 6px; font: 500 .88rem var(--font-body); cursor: pointer; }
+.btn:hover { background: var(--accent-soft); }
+.btn.solid { background: var(--accent); color: var(--surface); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.story { background: var(--accent-soft); border-radius: 8px; padding: 12px 16px; max-width: none; }
+.story p { max-width: 95ch; }
+
+.panels { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+figure { margin: 0; }
+.panel { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 10px 6px; background: var(--surface); }
+.panel figcaption { font-size: .85rem; color: var(--ink-2); padding: 4px 4px 2px; }
+.panel figcaption b { color: var(--ink); }
+svg.diagram { width: 100%; height: auto; display: block; color: var(--ink); font-family: var(--font-body); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: .85rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 16px; height: 12px; border-radius: 2px; display: inline-block; border: 1px solid var(--rule); }
+
+/* svg element styles */
+.ax { stroke: var(--ink); stroke-width: 1.4; fill: none; }
+.curve { stroke: var(--ink); stroke-width: 2; fill: none; }
+.curve.shift { stroke: var(--accent); stroke-dasharray: 6 4; }
+.curve.policy { stroke: var(--accent); stroke-width: 2.6; }
+.guide { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; fill: none; }
+.tick { fill: var(--ink-2); font-size: 12px; font-family: var(--font-mono); }
+.tick.name { fill: var(--muted); }
+.clabel { fill: var(--ink); font-size: 14px; font-weight: 600; }
+.clabel.shift { fill: var(--accent); }
+.axlabel { fill: var(--ink-2); font-size: 13px; }
+.region { stroke: var(--surface); stroke-width: 1.5; }
+.r-a { fill: var(--area-a); fill-opacity: .42; }
+.r-bd { fill: var(--area-bd); fill-opacity: .4; }
+.r-c { fill: url(#hatch-c); }
+.r-c-rent { fill: url(#cross-c); }
+.r-e { fill: url(#hatch-e); }
+.r-e-rent { fill: url(#cross-e); }
+.r-fg { fill: var(--area-fg); fill-opacity: .3; }
+.outline { fill: none; stroke: var(--area-c); stroke-width: 1.6; stroke-dasharray: 5 3; }
+.letter { fill: var(--ink); font-size: 13px; font-weight: 600; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.dot { fill: var(--ink); stroke: var(--surface); stroke-width: 2; }
+.dot.open { fill: var(--surface); stroke: var(--ink); stroke-width: 1.6; }
+.pf-c { fill: var(--area-c); fill-opacity: .12; }
+.ps-c { stroke: var(--area-c); stroke-width: 2.2; }
+.pf-e { fill: var(--area-e); fill-opacity: .12; }
+.ps-e { stroke: var(--area-e); stroke-width: 2.2; }
+
+/* ledger + welfare chart */
+.results { display: grid; grid-template-columns: 1.05fr 1fr; gap: 16px; align-items: start; }
+.card { border: 1px solid var(--rule); border-radius: 8px; padding: 14px; background: var(--surface); }
+.card h3 { margin-bottom: 8px; }
+.keyfacts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.chip { font-family: var(--font-mono); font-size: .8rem; border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; color: var(--ink-2); background: var(--paper); }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th, td { text-align: left; padding: 6px 6px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 500; color: var(--muted); font-size: .78rem; font-family: var(--font-mono); }
+td.v { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.f { font-family: var(--font-mono); font-size: .82rem; color: var(--ink-2); white-space: nowrap; }
+tr.total td { font-weight: 600; border-top: 2px solid var(--ink); }
+tr.sub td { color: var(--ink-2); }
+.verdict { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 6px 12px; border-radius: 6px; margin-top: 10px; border: 1px solid currentColor; }
+.verdict.good { color: var(--good); }
+.verdict.bad { color: var(--bad); }
+.verdict.neutral { color: var(--ink-2); }
+.chartwrap { position: relative; }
+.tooltip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 6px 9px; font-size: .8rem; box-shadow: 0 4px 14px rgba(0,0,0,.12); white-space: nowrap; }
+.tooltip .mono { font-size: .8rem; }
+.grid { stroke: var(--rule); stroke-width: 1; }
+.zero { stroke: var(--ink-2); stroke-width: 1.2; }
+.s1 { stroke: var(--series-1); stroke-width: 2; fill: none; }
+.s2 { stroke: var(--series-2); stroke-width: 2; fill: none; stroke-dasharray: 6 4; }
+.cross { stroke: var(--muted); stroke-width: 1; }
+.note { font-size: .82rem; color: var(--muted); margin-top: 6px; }
+
+/* problems */
+.problems { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.prob { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.prob .tag { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); }
+.given { font-family: var(--font-mono); font-size: .85rem; background: var(--paper); border-radius: 6px; padding: 8px 10px; line-height: 1.7; }
+.prob ol.q { margin: 0; padding-left: 20px; font-size: .92rem; color: var(--ink-2); }
+details { border-top: 1px solid var(--rule); padding-top: 8px; }
+summary { cursor: pointer; font-weight: 500; color: var(--accent); }
+ol.steps { margin: 10px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; font-size: .92rem; }
+ol.steps .mono { font-size: .85rem; }
+.answer { margin-top: 10px; font-weight: 600; }
+
+/* soybean case */
+:root { --lane-us: #2a78d6; --lane-br: #1a9e6e; }
+.eyebrow-s { font-family: var(--font-mono); font-size: .78rem; color: var(--area-c); letter-spacing: .05em; text-transform: uppercase; }
+.case-grid { display: grid; grid-template-columns: 1fr 290px; gap: 16px; align-items: stretch; }
+/* the ocean panel is a fixed night-sea world in both themes */
+.ocean { position: relative; border-radius: 12px; overflow: hidden; background: #08182a; color: #e6eef5; min-height: 340px; display: flex; flex-direction: column; }
+.ocean canvas { width: 100%; flex: 1 1 auto; min-height: 420px; display: block; }
+.ocean-ui { position: absolute; top: 14px; right: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.ocean .year { font: 600 3.2rem/1 var(--font-display); color: #f4f8fb; letter-spacing: .01em; text-shadow: 0 2px 18px rgba(0,0,0,.5); }
+.ocean-ctl { display: flex; gap: 10px; align-items: center; }
+.ocean-ctl input { width: 170px; accent-color: #ff6b6b; }
+.obtn { background: rgba(255,255,255,.1); color: #f4f8fb; border: 1px solid rgba(255,255,255,.35); border-radius: 6px; padding: 5px 12px; font: 500 .85rem var(--font-body); cursor: pointer; }
+.obtn:hover { background: rgba(255,255,255,.2); }
+.ocean-cap { font-size: .86rem; color: #b9cad8; padding: 10px 16px 14px; border-top: 1px solid rgba(255,255,255,.08); }
+.ocean-cap b { color: #f4f8fb; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.kpis { display: flex; flex-direction: column; gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.kpi .big { font: 600 2.1rem/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
+.kpi .big.down { color: var(--bad); }
+.kpi .big.up { color: var(--good); }
+.kpi .what { font-size: .88rem; font-weight: 500; }
+.kpi .sub { font-size: .8rem; color: var(--muted); font-family: var(--font-mono); }
+.monthly { margin-top: 16px; }
+.monthly .chartwrap { overflow-x: auto; }
+#svg-monthly { min-width: 680px; }
+.monthly .ml-us { stroke: var(--lane-us); stroke-width: 2.4; fill: none; stroke-linejoin: round; }
+.monthly .ml-br { stroke: var(--lane-br); stroke-width: 2.4; fill: none; stroke-linejoin: round; }
+.monthly .fa-us { fill: var(--lane-us); fill-opacity: .1; }
+.monthly .band { fill: var(--area-c); fill-opacity: .1; }
+.monthly .band-x { fill: url(#hatch-c); opacity: .35; }
+.monthly .event { stroke: var(--area-c); stroke-width: 1.4; stroke-dasharray: 4 3; }
+.monthly .evlabel { fill: var(--ink); font-size: 12.5px; font-weight: 600; }
+.model-map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.mm { background: var(--surface); border: 1px solid var(--rule); border-top: 4px solid var(--accent); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.mm .k { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); }
+.mm p { font-size: .91rem; color: var(--ink-2); }
+.mm .num { color: var(--ink); font-weight: 500; }
+@media (max-width: 980px) {
+  .case-grid { grid-template-columns: 1fr; }
+  .kpis { display: grid; grid-template-columns: repeat(2, 1fr); }
+  .model-map { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .ocean canvas { height: 320px; }
+  .ocean .year { font-size: 2.2rem; }
+  .ocean-ctl input { width: 110px; }
+  .model-map, .kpis { grid-template-columns: 1fr; }
+}
+
+/* practice */
+.practice { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.prac-head { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start; }
+.prac-side { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+.prac-score { font-family: var(--font-mono); font-size: .9rem; color: var(--ink-2); }
+.stages { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.stage { border: 1px solid var(--rule); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.stage .tag { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); }
+.stage .task { font-size: .92rem; color: var(--ink-2); }
+.fields { display: grid; grid-template-columns: 1fr 110px 22px; gap: 6px 10px; align-items: center; }
+.fields label { font-size: .9rem; }
+.fields input, .fields select { width: 100%; font: 500 .92rem var(--font-mono); padding: 5px 8px; border: 1px solid var(--rule); border-radius: 5px; background: var(--paper); color: var(--ink); text-align: right; }
+.fields select { text-align: left; }
+.fields input.ok, .fields select.ok { border-color: var(--good); }
+.fields input.no, .fields select.no { border-color: var(--bad); }
+.mark { font-weight: 700; text-align: center; }
+.mark.ok { color: var(--good); }
+.mark.no { color: var(--bad); }
+.hint { font-size: .88rem; background: var(--accent-soft); border-radius: 6px; padding: 8px 10px; }
+.reveal { font-size: .88rem; border-left: 3px solid var(--accent); padding: 4px 10px; display: flex; flex-direction: column; gap: 4px; }
+.reveal .mono { font-size: .84rem; }
+
+/* compare */
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+.compare th { font-family: var(--font-body); font-size: .9rem; color: var(--ink); font-weight: 600; background: var(--paper); }
+.compare td, .compare th { padding: 9px 12px; min-width: 150px; }
+.compare td:first-child { font-weight: 500; color: var(--ink-2); min-width: 130px; }
+
+/* pitfalls */
+.pitfalls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.pit { background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--area-c); border-radius: 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.pit p { font-size: .93rem; color: var(--ink-2); }
+
+/* quiz */
+.quiz { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.qcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.qcard .opts { display: flex; flex-direction: column; gap: 6px; }
+.qcard button.opt { text-align: left; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 6px; padding: 7px 10px; font: .92rem var(--font-body); cursor: pointer; }
+.qcard button.opt:hover { border-color: var(--accent); }
+.qcard button.opt.right { border-color: var(--good); color: var(--good); font-weight: 600; }
+.qcard button.opt.wrong { border-color: var(--bad); color: var(--bad); }
+.qcard .fb { font-size: .9rem; color: var(--ink-2); min-height: 1.4em; }
+.score { font-family: var(--font-mono); color: var(--ink-2); }
+
+/* glossary */
+dl.gloss { display: grid; grid-template-columns: 220px 1fr; gap: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; margin: 0; }
+dl.gloss dt, dl.gloss dd { padding: 9px 14px; border-bottom: 1px solid var(--rule); margin: 0; }
+dl.gloss dt { font-weight: 600; }
+dl.gloss dd { color: var(--ink-2); font-size: .93rem; }
+footer { padding: 30px 0 40px; color: var(--muted); font-size: .85rem; }
+
+@media (max-width: 980px) {
+  .toolkit { grid-template-columns: repeat(2, 1fr); }
+  .results, .panels, .problems, .pitfalls, .quiz, .stages, .prac-head { grid-template-columns: 1fr; }
+  .prac-side { align-items: flex-start; }
+  .top-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  h1 { font-size: 1.8rem; }
+  .toolkit { grid-template-columns: 1fr; }
+  .controls { grid-template-columns: 1fr; gap: 4px 0; }
+  dl.gloss { grid-template-columns: 1fr; }
+  dl.gloss dt { border-bottom: 0; padding-bottom: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="hatch-c" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(45)">
+      <rect width="7" height="7" class="pf-c"></rect><line x1="0" y1="0" x2="0" y2="7" class="ps-c"></line>
+    </pattern>
+    <pattern id="cross-c" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+      <rect width="8" height="8" class="pf-c"></rect><line x1="0" y1="0" x2="0" y2="8" class="ps-c"></line><line x1="0" y1="0" x2="8" y2="0" class="ps-c"></line>
+    </pattern>
+    <pattern id="hatch-e" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-45)">
+      <rect width="7" height="7" class="pf-e"></rect><line x1="0" y1="0" x2="0" y2="7" class="ps-e"></line>
+    </pattern>
+    <pattern id="cross-e" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(-45)">
+      <rect width="8" height="8" class="pf-e"></rect><line x1="0" y1="0" x2="0" y2="8" class="ps-e"></line><line x1="0" y1="0" x2="8" y2="0" class="ps-e"></line>
+    </pattern>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap top-grid">
+    <div>
+      <div class="eyebrow">AREC 530 · Agricultural trade policy</div>
+      <h1>Trade Policy Lab</h1>
+      <p class="lede">An interactive companion to the lecture notes <i>Trade Policies: Importing and Exporting Countries</i> (A. Muhammad). Move a policy lever and watch prices, trade volumes and the welfare areas a, b, c, d and e respond in the home market and the trade market at once. Every number on this page is computed live from the linear model used in the slides.</p>
+      <nav class="toc" aria-label="Sections">
+        <a href="#case">The soybean case</a>
+        <a href="#toolkit">Policy toolkit</a>
+        <a href="#lab">Simulator</a>
+        <a href="#problems">Worked problems</a>
+        <a href="#practice">Solve it yourself</a>
+        <a href="#compare">Side by side</a>
+        <a href="#pitfalls">Common slips</a>
+        <a href="#quiz">Check yourself</a>
+        <a href="#glossary">Glossary</a>
+      </nav>
+    </div>
+    <aside class="readings" aria-label="Readings">
+      <b>Readings</b><br>
+      Markets over space: Ferris ch. 12; Koo &amp; Kennedy ch. 6<br>
+      Domestic support and trade: Koo &amp; Kennedy ch. 9<br>
+      Trade policies: Koo &amp; Kennedy ch. 7–8<br>
+      WTO and trade agreements: Koo &amp; Kennedy ch. 10–11<br>
+      Abboushi (2010), “Trade protectionism: reasons and outcomes,” <i>Competitiveness Review</i> 20(5): 384–394
+    </aside>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section id="case">
+  <div class="section-head">
+    <div class="eyebrow-s">Real-world case · UN Comtrade data</div>
+    <h2>The soybean standoff: when China taxed American beans</h2>
+    <p>On 6 July 2018 China, the world’s biggest soybean buyer, answered US tariffs with a 25% tariff on American soybeans. Ships that had crossed the Pacific every autumn for years stopped coming. This is the large-country tariff from the lecture, playing out in real trade data. Press play and watch the shipping lanes.</p>
+  </div>
+  <div class="case-grid">
+    <figure class="ocean">
+      <canvas id="flow" role="img" aria-label="Animated shipping lanes of soybeans into China from the United States, Brazil and Argentina, sized by tonnes per year"></canvas>
+      <div class="ocean-ui">
+        <div class="year" id="flow-year" aria-live="polite"></div>
+        <div class="ocean-ctl">
+          <button type="button" class="obtn" id="flow-play">Play 2014–2024</button>
+          <label for="flow-range" class="sr">Year</label>
+          <input type="range" id="flow-range" min="2014" max="2024" step="1">
+        </div>
+      </div>
+      <figcaption class="ocean-cap" id="flow-cap"></figcaption>
+    </figure>
+    <div class="kpis" id="kpis"></div>
+  </div>
+  <figure class="card monthly">
+    <h3>Monthly soybean arrivals in China, 2017–2020</h3>
+    <div class="legend" style="margin:4px 0 2px">
+      <span><svg width="22" height="10" aria-hidden="true"><line x1="0" y1="5" x2="22" y2="5" style="stroke:var(--lane-us);stroke-width:2.5"></line></svg>From the United States</span>
+      <span><svg width="22" height="10" aria-hidden="true"><line x1="0" y1="5" x2="22" y2="5" style="stroke:var(--lane-br);stroke-width:2.5"></line></svg>From Brazil</span>
+      <span><span class="sw" style="background:color-mix(in srgb, var(--area-c) 18%, transparent)"></span>25% tariff on US soybeans in force</span>
+      <span><span class="sw" style="background:repeating-linear-gradient(45deg, color-mix(in srgb, var(--area-c) 45%, transparent) 0 2px, transparent 2px 5px)"></span>Tariff still in force, with exclusions for buyers after the Phase One deal</span>
+    </div>
+    <div class="chartwrap">
+      <svg class="diagram" id="svg-monthly" viewBox="0 0 960 300" role="img" aria-label="Monthly China soybean imports from the US and Brazil, 2017 to 2020"></svg>
+      <div class="tooltip" id="tip-m" hidden></div>
+    </div>
+    <figcaption class="note" id="monthly-cap"></figcaption>
+  </figure>
+  <div class="section-head" style="margin-top:22px">
+    <h3>Read it through the model</h3>
+  </div>
+  <div class="model-map" id="model-map"></div>
+  <div class="actions" style="margin-top:12px">
+    <button type="button" class="btn solid" data-preset="p2">Model it: large-country tariff in the simulator</button>
+    <a class="btn" href="#practice" style="text-decoration:none">Solve the soybean tariff problem yourself</a>
+  </div>
+  <p class="note" id="case-source"></p>
+</section>
+
+<section id="toolkit">
+  <div class="section-head">
+    <h2>The policy toolkit</h2>
+    <p>Three import policies and one export policy. Each opens a wedge between the price at home and the price in the world market; they differ in who collects the wedge.</p>
+  </div>
+  <div class="toolkit">
+    <article class="tool">
+      <h3>Tariff</h3>
+      <p>A tax on imports. <b>Specific</b>: a fixed amount per unit ($2.00/lb on milk). <b>Ad valorem</b>: a percent of value (20% on cheese).</p>
+      <div class="eq">P<sub>d</sub> = P<sub>w</sub> + t &nbsp;or&nbsp; P<sub>w</sub>(1 + τ)</div>
+      <p>The wedge is government revenue.</p>
+      <button class="btn" data-preset="p1">Open in simulator</button>
+    </article>
+    <article class="tool">
+      <h3>Import quota</h3>
+      <p>A legal limit on the quantity imported. The domestic price rises until home excess demand equals the quota.</p>
+      <div class="eq">ED(P<sub>d</sub>) = Q<sub>0</sub></div>
+      <p>The wedge becomes quota rent for whoever holds the licences.</p>
+      <button class="btn" data-preset="p3">Open in simulator</button>
+    </article>
+    <article class="tool">
+      <h3>Tariff-rate quota</h3>
+      <p>Imports up to the access limit Ω enter at a low (or zero) tariff; imports above Ω pay a higher over-quota tariff.</p>
+      <div class="eq">Q ≤ Ω: P<sub>w</sub> · Q &gt; Ω: P<sub>w</sub> + t</div>
+      <p>The wedge splits into in-quota rent and over-quota revenue.</p>
+      <button class="btn" data-preset="p5">Open in simulator</button>
+    </article>
+    <article class="tool">
+      <h3>Export subsidy</h3>
+      <p>A payment per unit exported. Exporters sell abroad for less, so the domestic price rises and the world price falls.</p>
+      <div class="eq">P<sub>d</sub> = P<sub>w</sub>′ + s</div>
+      <p>Taxpayers pay the wedge; part of it is a gift to foreign buyers.</p>
+      <button class="btn" data-preset="p6">Open in simulator</button>
+    </article>
+  </div>
+</section>
+
+<section id="lab">
+  <div class="section-head">
+    <h2>Simulator</h2>
+    <p>Home demand <span class="mono">Qd = 160 − 1.5P</span> and supply <span class="mono">Qs = 20 + 0.5P</span> give import demand <span class="mono">Qm = 140 − 2P</span>. A large country trades against foreign excess supply <span class="mono">Qx = −60 + 2P</span>. For the export subsidy, the home country is the exporter (<span class="mono">Qd = 100 − P</span>, <span class="mono">Qs = 40 + P</span>, so <span class="mono">Qx = −60 + 2P</span>) facing foreign import demand <span class="mono">Qm = 140 − 2P</span>.</p>
+  </div>
+
+  <div class="lab">
+    <div class="controls">
+      <span class="ctl-label" id="lbl-policy">Policy</span>
+      <div class="seg" role="group" aria-labelledby="lbl-policy" id="seg-policy">
+        <button type="button" data-v="tariff">Tariff</button>
+        <button type="button" data-v="quota">Import quota</button>
+        <button type="button" data-v="trq">Tariff-rate quota</button>
+        <button type="button" data-v="subsidy">Export subsidy</button>
+      </div>
+      <span class="ctl-label" id="lbl-size">Country</span>
+      <div class="seg" role="group" aria-labelledby="lbl-size" id="seg-size">
+        <button type="button" data-v="small">Small (price taker)</button>
+        <button type="button" data-v="large">Large (moves world price)</button>
+      </div>
+      <span class="ctl-label" id="lbl-tmode" data-show="tariff">Tariff type</span>
+      <div class="seg" role="group" aria-labelledby="lbl-tmode" id="seg-tmode" data-show="tariff">
+        <button type="button" data-v="specific">Specific ($/unit)</button>
+        <button type="button" data-v="adval">Ad valorem (%)</button>
+      </div>
+      <span class="ctl-label" id="lbl-rent" data-show="quota trq">Quota licences held by</span>
+      <div class="seg" role="group" aria-labelledby="lbl-rent" id="seg-rent" data-show="quota trq">
+        <button type="button" data-v="home">Home importers</button>
+        <button type="button" data-v="foreign">Foreign exporters</button>
+      </div>
+      <span class="ctl-label">Levers</span>
+      <div class="sliders">
+        <div class="slider" data-show="small-import"><label for="pw">World price P<sub>w</sub> <output id="pw-o"></output></label><input type="range" id="pw" min="20" max="60" step="1"></div>
+        <div class="slider" data-show="small-export"><label for="pwx">World price P<sub>w</sub> <output id="pwx-o"></output></label><input type="range" id="pwx" min="35" max="60" step="1"></div>
+        <div class="slider" data-show="tariff-specific"><label for="t">Specific tariff t ($/unit) <output id="t-o"></output></label><input type="range" id="t" min="0" max="40" step="1"></div>
+        <div class="slider" data-show="tariff-adval"><label for="tau">Ad valorem tariff τ (%) <output id="tau-o"></output></label><input type="range" id="tau" min="0" max="100" step="1"></div>
+        <div class="slider" data-show="quota"><label for="q0">Import quota Q<sub>0</sub> (units) <output id="q0-o"></output></label><input type="range" id="q0" min="0" max="100" step="1"></div>
+        <div class="slider" data-show="trq"><label for="omega">Access limit Ω (units) <output id="omega-o"></output></label><input type="range" id="omega" min="0" max="80" step="1"></div>
+        <div class="slider" data-show="trq"><label for="tOver">Over-quota tariff ($/unit) <output id="tOver-o"></output></label><input type="range" id="tOver" min="0" max="40" step="1"></div>
+        <div class="slider" data-show="subsidy"><label for="s">Export subsidy s ($/unit) <output id="s-o"></output></label><input type="range" id="s" min="0" max="20" step="0.5"></div>
+      </div>
+      <span class="ctl-label">Run</span>
+      <div class="actions">
+        <button type="button" class="btn solid" id="play">Sweep the lever from zero</button>
+        <button type="button" class="btn" id="reset">Reset to the lecture example</button>
+      </div>
+    </div>
+
+    <div class="story" aria-live="polite"><p id="story"></p></div>
+
+    <div class="legend" id="legend"></div>
+
+    <div class="panels">
+      <figure class="panel">
+        <svg class="diagram" id="svg-home" viewBox="0 0 520 410" role="img" aria-label="Home market diagram"></svg>
+        <figcaption id="cap-home"></figcaption>
+      </figure>
+      <figure class="panel">
+        <svg class="diagram" id="svg-world" viewBox="0 0 520 410" role="img" aria-label="Trade market diagram"></svg>
+        <figcaption id="cap-world"></figcaption>
+      </figure>
+    </div>
+
+    <div class="results">
+      <div class="card">
+        <h3>Welfare ledger</h3>
+        <div class="keyfacts" id="facts"></div>
+        <table id="ledger" aria-label="Welfare changes">
+          <thead><tr><th>Group</th><th>Areas</th><th style="text-align:right">Change</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div id="verdict"></div>
+      </div>
+      <div class="card">
+        <h3 id="wc-title">Net welfare as the lever moves</h3>
+        <div class="legend" style="margin-bottom:4px">
+          <span><svg width="22" height="10" aria-hidden="true"><line x1="0" y1="5" x2="22" y2="5" class="s1"></line></svg>Home country</span>
+          <span><svg width="22" height="10" aria-hidden="true"><line x1="0" y1="5" x2="22" y2="5" class="s2"></line></svg>World (home + foreign)</span>
+        </div>
+        <div class="chartwrap">
+          <svg class="diagram" id="svg-welfare" viewBox="0 0 520 270" role="img" aria-label="Net welfare against policy level"></svg>
+          <div class="tooltip" id="tip" hidden></div>
+        </div>
+        <p class="note" id="wc-note"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="problems">
+  <div class="section-head">
+    <h2>Worked problems from the lecture</h2>
+    <p>The same demand and supply curves run through every problem. Load any one into the simulator, or open the step-by-step solution.</p>
+  </div>
+  <div class="problems" id="prob-list"></div>
+</section>
+
+<section id="practice">
+  <div class="section-head">
+    <h2>Solve it yourself: tariff in a large country</h2>
+    <p>Work through the problem in four stages. Type each answer (to two decimals where needed) and press <b>Check</b>. Use a hint if you are stuck, reveal a stage only after trying it, then press <b>New numbers</b> and solve a fresh version until you can do it without hints.</p>
+  </div>
+  <div class="practice">
+    <div class="prac-head">
+      <div class="given" id="pr-given"></div>
+      <div class="prac-side">
+        <div class="actions">
+          <button type="button" class="btn solid" id="pr-new">New numbers</button>
+          <button type="button" class="btn" id="pr-lecture">Lecture numbers (t = $10)</button>
+          <button type="button" class="btn" id="pr-sim">See this case in the simulator</button>
+        </div>
+        <div class="prac-score" id="pr-score" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="stages" id="pr-stages"></div>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="section-head">
+    <h2>Side by side</h2>
+    <p>The four instruments compared on the questions an exam usually asks.</p>
+  </div>
+  <div class="tablewrap">
+    <table class="compare">
+      <thead><tr><th></th><th>Tariff</th><th>Import quota</th><th>Tariff-rate quota</th><th>Export subsidy</th></tr></thead>
+      <tbody>
+        <tr><td>Domestic price</td><td>Rises by t (small); by less than t (large)</td><td>Rises until imports equal the quota</td><td>Set by P<sub>w</sub> + over-quota tariff, or by Ω if that binds first</td><td>Rises by s (small); by less than s (large)</td></tr>
+        <tr><td>World price</td><td>Unchanged (small); falls (large)</td><td>Unchanged (small); falls (large)</td><td>Unchanged (small); falls (large)</td><td>Unchanged (small); falls (large)</td></tr>
+        <tr><td>Who collects the wedge</td><td>Government: tariff revenue c (+ e)</td><td>Licence holders: quota rent c (+ e)</td><td>Licence holders on the first Ω units; government on the rest</td><td>Nobody: taxpayers pay s × exports</td></tr>
+        <tr><td>Home deadweight loss</td><td>b + d</td><td>b + d</td><td>b + d</td><td>b + d (plus terms-of-trade loss e when large)</td></tr>
+        <tr><td>Can the home country gain?</td><td>Large country only, if e &gt; b + d</td><td>Large country only, and only if the rents stay at home</td><td>Large country only, as for the tariff</td><td>No. Home loses b + d + e</td></tr>
+        <tr><td>WTO status (agriculture)</td><td>Allowed, bound in each member’s schedule</td><td>Converted to tariffs (“tariffication”) in the Uruguay Round Agreement on Agriculture</td><td>The tool that replaced quotas after tariffication (e.g. US sugar and dairy TRQs)</td><td>Members agreed to eliminate agricultural export subsidies at the Nairobi Ministerial (2015)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="pitfalls">
+  <div class="section-head">
+    <h2>Common slips when measuring the areas</h2>
+    <p>Each one is easy to make under exam pressure. The numbers below come from the lecture problems.</p>
+  </div>
+  <div class="pitfalls" id="pit-list"></div>
+</section>
+
+<section id="quiz">
+  <div class="section-head">
+    <h2>Check yourself</h2>
+    <p>Pick an answer to see why it is right or wrong. <span class="score" id="score"></span></p>
+  </div>
+  <div class="quiz" id="quiz-list"></div>
+</section>
+
+<section id="glossary">
+  <div class="section-head">
+    <h2>Glossary</h2>
+  </div>
+  <dl class="gloss">
+    <dt>Specific tariff</dt><dd>A fixed tax per unit imported, e.g. $2.00 per lb.</dd>
+    <dt>Ad valorem tariff</dt><dd>A tax set as a percent of the import’s value, e.g. 20% of the price of cheese.</dd>
+    <dt>Import quota</dt><dd>A legal ceiling on the quantity that may be imported in a period.</dd>
+    <dt>Quota rent</dt><dd>The gap between the domestic and the world price times the quantity imported under the quota. It goes to whoever holds the import licences.</dd>
+    <dt>Tariff-rate quota (TRQ)</dt><dd>A two-tier tariff: a low in-quota rate up to the access limit, and a higher over-quota rate beyond it.</dd>
+    <dt>Access limit (Ω)</dt><dd>The quantity that may enter at the in-quota tariff under a TRQ.</dd>
+    <dt>Export subsidy</dt><dd>A government payment per unit exported. It raises the price exporters receive above the world price.</dd>
+    <dt>Excess demand (ED)</dt><dd>Domestic demand minus domestic supply at each price, Qd − Qs. It is the importing country’s demand for imports.</dd>
+    <dt>Excess supply (ES)</dt><dd>Domestic supply minus domestic demand, Qs − Qd. It is the exporting country’s supply of exports.</dd>
+    <dt>Small country</dt><dd>A trader too small to affect the world price. It faces a horizontal (perfectly elastic) foreign supply or demand curve.</dd>
+    <dt>Large country</dt><dd>A trader whose purchases or sales move the world price. It faces an upward-sloping ES (as importer) or downward-sloping ED (as exporter).</dd>
+    <dt>Consumer surplus (CS)</dt><dd>The area below the demand curve and above the price paid.</dd>
+    <dt>Producer surplus (PS)</dt><dd>The area above the supply curve and below the price received.</dd>
+    <dt>Deadweight loss (DWL)</dt><dd>Surplus lost to everyone. Under an import tariff, b is the cost of producing at home units that could have been imported more cheaply, and d is the value of consumption given up.</dd>
+    <dt>Terms-of-trade effect</dt><dd>The change in the price a country pays for imports (or receives for exports). For a large importer with a tariff, area e is the part of the tariff paid by foreign exporters through a lower world price.</dd>
+    <dt>Optimal tariff</dt><dd>For a large importer, the tariff that maximizes national welfare, where the marginal terms-of-trade gain equals the marginal deadweight loss. It is always zero for a small country.</dd>
+    <dt>Tariffication</dt><dd>The Uruguay Round requirement that non-tariff barriers on farm goods, such as quotas, be converted into tariffs, often administered as TRQs.</dd>
+  </dl>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">Built for AREC 530 teaching. Model curves follow the lecture slides; the export-subsidy domestic curves are chosen so that home excess supply matches the slides’ Qx = −60 + 2P.</div>
+</footer>
+
+<script>
+(() => {
+"use strict";
+
+/* ---------- model ---------- */
+const IMP = {
+  D: P => 160 - 1.5 * P, S: P => 20 + 0.5 * P,
+  ED: P => 140 - 2 * P, invED: Q => 70 - Q / 2,
+  ES: P => -60 + 2 * P, invES: Q => 30 + Q / 2,
+  qmax: 140, wmax: 100, pmax: 90
+};
+const EXP = {
+  D: P => 100 - P, S: P => 40 + P,
+  ES: P => -60 + 2 * P, invES: Q => 30 + Q / 2,
+  ED: P => 140 - 2 * P, invED: Q => 70 - Q / 2,
+  qmax: 140, wmax: 100, pmax: 90
+};
+const pos = x => Math.max(0, x);
+
+function solveImport(st) {
+  const L = st.size === "large";
+  const P0 = L ? 50 : st.pw;
+  const Q0m = L ? 40 : pos(IMP.ED(P0));
+  let Pd = P0, Pf = P0, Qm = Q0m, rev = 0, rent = 0, regime = "free";
+  if (st.policy === "tariff") {
+    if (st.tMode === "specific") {
+      if (L) { Qm = pos(40 - st.t); Pf = IMP.invES(Qm); Pd = IMP.invED(Qm); }
+      else { Pd = Math.min(P0 + st.t, 70); Qm = pos(IMP.ED(Pd)); }
+    } else {
+      const tau = st.tau / 100;
+      if (L) { Qm = pos(2 * (40 - 30 * tau) / (2 + tau)); Pf = IMP.invES(Qm); Pd = IMP.invED(Qm); }
+      else { Pd = Math.min(P0 * (1 + tau), 70); Qm = pos(IMP.ED(Pd)); }
+    }
+    rev = (Pd - Pf) * Qm;
+    regime = Qm <= 1e-9 && Q0m > 0 ? "prohibitive" : "tariff";
+  } else if (st.policy === "quota") {
+    Qm = Math.min(st.q0, Q0m);
+    Pd = IMP.invED(Qm);
+    Pf = L ? IMP.invES(Qm) : P0;
+    rent = (Pd - Pf) * Qm;
+    regime = st.q0 >= Q0m ? "slack" : "binding";
+  } else if (st.policy === "trq") {
+    const Om = st.omega, t = st.tOver;
+    if (Q0m <= Om) { regime = "slack"; }
+    else {
+      const Qa = L ? pos(40 - t) : pos(IMP.ED(P0 + t));
+      if (Qa >= Om) {
+        Qm = Qa; Pf = L ? IMP.invES(Qa) : P0; Pd = Pf + t;
+        rent = t * Om; rev = t * (Qa - Om); regime = "over";
+      } else {
+        Qm = Om; Pd = IMP.invED(Om); Pf = L ? IMP.invES(Om) : P0;
+        rent = (Pd - Pf) * Om; regime = "atlimit";
+      }
+    }
+  }
+  const dP = Pd - P0;
+  const Qs0 = IMP.S(P0), Qd0 = IMP.D(P0), Qs1 = IMP.S(Pd), Qd1 = IMP.D(Pd);
+  const b = 0.5 * dP * (Qs1 - Qs0);
+  const a = dP * Qs0 + b;
+  const c = dP * Qm;
+  const d = 0.5 * dP * (Qd0 - Qd1);
+  const e = (P0 - Pf) * Qm;
+  const csLoss = a + b + c + d;
+  const rentHome = st.rentTo === "home";
+  const home = -csLoss + a + rev + (rentHome ? rent : 0);
+  const expLoss = (P0 - Pf) * (Q0m + Qm) / 2;
+  const fg = expLoss - e;
+  const foreign = -expLoss + (rentHome ? 0 : rent);
+  return { kind: "import", L, P0, Pd, Pf, Q0m, Qm, rev, rent, regime, dP, Qs0, Qd0, Qs1, Qd1,
+           a, b, c, d, e, fg, csLoss, psGain: a, home, foreign, expLoss, world: home + foreign, rentHome };
+}
+
+function solveExport(st) {
+  const L = st.size === "large";
+  const P0 = L ? 50 : st.pwx;
+  const X0 = pos(EXP.ES(P0));
+  let Pd, Pf, X;
+  if (L) { X = 40 + st.s; Pd = EXP.invES(X); Pf = EXP.invED(X); }
+  else { Pd = P0 + st.s; Pf = P0; X = pos(EXP.ES(Pd)); }
+  const dP = Pd - P0;
+  const D0 = EXP.D(P0), D1 = EXP.D(Pd), S0 = EXP.S(P0), S1 = EXP.S(Pd);
+  const a = dP * D1;
+  const b = 0.5 * dP * (D0 - D1);
+  const psGain = dP * (S0 + S1) / 2;
+  const c = psGain - a - b;
+  const d = 0.5 * dP * (S1 - S0);
+  const e = (P0 - Pf) * X;
+  const cost = st.s * X;
+  const home = -(a + b) + psGain - cost;
+  const foreign = (P0 - Pf) * (X0 + X) / 2;
+  return { kind: "export", L, P0, Pd, Pf, X0, X, dP, D0, D1, S0, S1, a, b, c, d, e,
+           csLoss: a + b, psGain, cost, home, foreign, world: home + foreign };
+}
+
+const solve = st => st.policy === "subsidy" ? solveExport(st) : solveImport(st);
+
+/* ---------- formatting ---------- */
+const fmt = (x, dp = 2) => {
+  const v = Math.abs(x) < 5e-10 ? 0 : x;
+  return v.toLocaleString("en-US", { maximumFractionDigits: dp, minimumFractionDigits: 0 });
+};
+const usd = x => (x < -5e-10 ? "−$" : "$") + fmt(Math.abs(x));
+const signed = x => (x > 5e-3 ? "+" : x < -5e-3 ? "−" : "") + "$" + fmt(Math.abs(x));
+const esc = s => String(s);
+
+/* ---------- state ---------- */
+const DEFAULT = { policy: "tariff", size: "small", tMode: "specific", rentTo: "home",
+  pw: 30, pwx: 50, t: 10, tau: 20, q0: 35, omega: 30, tOver: 15, s: 10 };
+const PRESETS = {
+  p1: { policy: "tariff", size: "small", tMode: "specific", pw: 30, t: 10 },
+  p2: { policy: "tariff", size: "large", tMode: "specific", t: 10 },
+  p3: { policy: "quota", size: "small", pw: 40, q0: 35, rentTo: "home" },
+  p4: { policy: "quota", size: "large", q0: 30, rentTo: "home" },
+  p5: { policy: "trq", size: "small", pw: 30, omega: 30, tOver: 15, rentTo: "home" },
+  p6: { policy: "subsidy", size: "large", s: 10 }
+};
+let st = { ...DEFAULT };
+const LECTURE_FOR = { tariff: "p1", quota: "p3", trq: "p5", subsidy: "p6" };
+
+function instrument(s) {
+  if (s.policy === "tariff") return s.tMode === "specific"
+    ? { key: "t", label: "Specific tariff t ($/unit)", min: 0, max: 40, unit: v => "$" + fmt(v) }
+    : { key: "tau", label: "Ad valorem tariff τ (%)", min: 0, max: 100, unit: v => fmt(v) + "%" };
+  if (s.policy === "quota") return { key: "q0", label: "Import quota (units)", min: 0, max: 100, unit: v => fmt(v) + " units" };
+  if (s.policy === "trq") return { key: "tOver", label: "Over-quota tariff ($/unit), Ω held at " + fmt(s.omega), min: 0, max: 40, unit: v => "$" + fmt(v) };
+  return { key: "s", label: "Export subsidy s ($/unit)", min: 0, max: 20, unit: v => "$" + fmt(v) };
+}
+
+/* ---------- svg helpers ---------- */
+const W = 520, H = 410, M = { l: 92, r: 22, t: 20, b: 62 };
+function frame(qmax, pmax) {
+  const x = q => M.l + q / qmax * (W - M.l - M.r);
+  const y = p => H - M.b - p / pmax * (H - M.t - M.b);
+  return { x, y };
+}
+const pts = (f, arr) => arr.map(([q, p]) => f.x(q).toFixed(1) + "," + f.y(p).toFixed(1)).join(" ");
+const poly = (f, arr, cls) => `<polygon class="region ${cls}" points="${pts(f, arr)}"></polygon>`;
+const line = (f, q1, p1, q2, p2, cls) => `<line class="${cls}" x1="${f.x(q1).toFixed(1)}" y1="${f.y(p1).toFixed(1)}" x2="${f.x(q2).toFixed(1)}" y2="${f.y(p2).toFixed(1)}"></line>`;
+const pathL = (f, arr, cls) => `<polyline class="${cls}" points="${pts(f, arr)}"></polyline>`;
+
+function letter(f, q, p, txt, wq, hp) {
+  const wpx = Math.abs(f.x(wq) - f.x(0)), hpx = Math.abs(f.y(0) - f.y(hp));
+  if (wpx < 13 || hpx < 11) return "";
+  return `<text class="letter" x="${f.x(q).toFixed(1)}" y="${f.y(p).toFixed(1)}">${txt}</text>`;
+}
+
+function axes(f, qmax, pmax, xl, yl, id) {
+  return `<defs><clipPath id="clip-${id}"><rect x="${M.l}" y="${M.t}" width="${W - M.l - M.r}" height="${H - M.t - M.b}"></rect></clipPath></defs>` +
+    `<polyline class="ax" points="${M.l},${M.t - 6} ${M.l},${H - M.b} ${W - M.r + 6},${H - M.b}"></polyline>` +
+    `<text class="axlabel" x="${M.l - 8}" y="${M.t + 2}" text-anchor="end">${yl}</text>` +
+    `<text class="axlabel" x="${W - M.r}" y="${H - M.b + 46}" text-anchor="end">${xl}</text>`;
+}
+
+function priceTicks(f, list) {
+  // list: [{p, name}] ; nudge apart vertically so labels never collide
+  const items = list.filter(o => o.p >= 0).map(o => ({ ...o, y: f.y(o.p) })).sort((a, b) => a.y - b.y);
+  const merged = [];
+  for (const it of items) {
+    const last = merged[merged.length - 1];
+    if (last && Math.abs(last.p - it.p) < 1e-6) { last.name += " = " + it.name; continue; }
+    merged.push({ ...it });
+  }
+  for (let i = 1; i < merged.length; i++) if (merged[i].y - merged[i - 1].y < 15) merged[i].y = merged[i - 1].y + 15;
+  return merged.map(o => `<text class="tick" x="${M.l - 6}" y="${(o.y + 4).toFixed(1)}" text-anchor="end"><tspan class="tick name">${o.name} </tspan>$${fmt(o.p)}</text>`).join("");
+}
+
+function qtyTicks(f, list) {
+  const items = list.filter(o => o.q > 0.01).map(o => ({ ...o, x: f.x(o.q) })).sort((a, b) => a.x - b.x);
+  const merged = [];
+  for (const it of items) {
+    const last = merged[merged.length - 1];
+    if (last && Math.abs(last.q - it.q) < 1e-6) continue;
+    merged.push(it);
+  }
+  const rowsLast = [-1e9, -1e9, -1e9];
+  return merged.map(o => {
+    const w = String(fmt(o.q)).length * 7.4 + 6;
+    let r = 0;
+    while (r < 2 && o.x - w / 2 < rowsLast[r]) r++;
+    rowsLast[r] = o.x + w / 2;
+    return `<text class="tick" x="${o.x.toFixed(1)}" y="${H - M.b + 15 + r * 13}" text-anchor="middle">${fmt(o.q)}</text>`;
+  }).join("");
+}
+
+/* ---------- import diagrams ---------- */
+function splitRegions(f, x0, x1, pLo, pHi, inQ, base) {
+  // base: 'c' or 'e'; region [x0,x1] x [pLo,pHi], first inQ units are rent, rest revenue
+  if (x1 - x0 < 1e-9 || pHi - pLo < 1e-9) return "";
+  const rentCls = `r-${base}-rent`, revCls = `r-${base}`;
+  if (inQ <= 1e-9) return poly(f, [[x0, pLo], [x1, pLo], [x1, pHi], [x0, pHi]], revCls);
+  const xm = Math.min(x1, x0 + inQ);
+  let out = poly(f, [[x0, pLo], [xm, pLo], [xm, pHi], [x0, pHi]], rentCls);
+  if (x1 - xm > 1e-9) out += poly(f, [[xm, pLo], [x1, pLo], [x1, pHi], [xm, pHi]], revCls);
+  return out;
+}
+
+function importLetters(r) {
+  // returns label for c and e regions given who collects
+  if (r.rent > 0 && r.rev > 0) return { c: "c", e: "e" };
+  return { c: "c", e: "e" };
+}
+
+function drawImportHome(r) {
+  const f = frame(IMP.qmax, IMP.pmax);
+  let s = axes(f, IMP.qmax, IMP.pmax, "Q (home market)", "P", "home");
+  let g = "";
+  const inQ = r.rent > 0 ? (r.rev > 0 ? st.omega : r.Qm) : 0;
+  if (r.dP > 1e-6) {
+    g += poly(f, [[0, r.P0], [r.Qs0, r.P0], [r.Qs1, r.Pd], [0, r.Pd]], "r-a");
+    g += poly(f, [[r.Qs0, r.P0], [r.Qs1, r.P0], [r.Qs1, r.Pd]], "r-bd");
+    g += splitRegions(f, r.Qs1, r.Qd1, r.P0, r.Pd, inQ, "c");
+    g += poly(f, [[r.Qd1, r.Pd], [r.Qd1, r.P0], [r.Qd0, r.P0]], "r-bd");
+  }
+  if (r.P0 - r.Pf > 1e-6) g += splitRegions(f, r.Qs1, r.Qd1, r.Pf, r.P0, inQ, "e");
+  // guides
+  const pl = [r.P0, r.Pd, r.Pf];
+  for (const p of new Set(pl.map(v => v.toFixed(6)))) g += line(f, 0, +p, IMP.qmax, +p, "guide");
+  for (const [q, p] of [[r.Qs0, r.P0], [r.Qd0, r.P0], [r.Qs1, r.Pd], [r.Qd1, r.Pd]]) g += line(f, q, 0, q, p, "guide");
+  // curves
+  g += `<g clip-path="url(#clip-home)">` + line(f, IMP.D(90), 90, 140, (160 - 140) / 1.5, "curve") + line(f, 20, 0, IMP.S(90), 90, "curve") + `</g>`;
+  g += `<text class="clabel" x="${f.x(IMP.D(88)) + 8}" y="${f.y(88) + 4}">D</text>`;
+  g += `<text class="clabel" x="${f.x(IMP.S(88)) + 8}" y="${f.y(88) + 4}">S</text>`;
+  g += `<circle class="dot" cx="${f.x(55)}" cy="${f.y(70)}" r="3.2"></circle><text class="tick name" x="${f.x(55) + 8}" y="${f.y(70) - 6}">autarky</text>`;
+  // letters
+  if (r.dP > 1e-6) {
+    g += letter(f, Math.min(r.Qs0, 30) / 2 + 2, (r.P0 + r.Pd) / 2, "a", r.Qs0, r.dP);
+    g += letter(f, r.Qs0 + (r.Qs1 - r.Qs0) * 0.67, r.P0 + r.dP * 0.33, "b", r.Qs1 - r.Qs0, r.dP);
+    g += letter(f, (r.Qs1 + r.Qd1) / 2, (r.P0 + r.Pd) / 2, "c", r.Qd1 - r.Qs1, r.dP);
+    g += letter(f, r.Qd1 + (r.Qd0 - r.Qd1) * 0.33, r.P0 + r.dP * 0.33, "d", r.Qd0 - r.Qd1, r.dP);
+  }
+  if (r.P0 - r.Pf > 1e-6) g += letter(f, (r.Qs1 + r.Qd1) / 2, (r.P0 + r.Pf) / 2, "e", r.Qd1 - r.Qs1, r.P0 - r.Pf);
+  // ticks
+  const pnames = [{ p: r.P0, name: "Pw" }];
+  if (r.dP > 1e-6) pnames.push({ p: r.Pd, name: st.policy === "tariff" ? "Pd" : "Pd" });
+  if (r.P0 - r.Pf > 1e-6) pnames.push({ p: r.Pf, name: "Pw′" });
+  s += g + priceTicks(f, pnames) + qtyTicks(f, [{ q: r.Qs0 }, { q: r.Qd0 }, { q: r.Qs1 }, { q: r.Qd1 }]);
+  document.getElementById("svg-home").innerHTML = s;
+  document.getElementById("cap-home").innerHTML = r.dP > 1e-6
+    ? `<b>Home market.</b> The domestic price rises from ${usd(r.P0)} to ${usd(r.Pd)}. Production rises ${fmt(r.Qs0)} → ${fmt(r.Qs1)}; consumption falls ${fmt(r.Qd0)} → ${fmt(r.Qd1)}.`
+    : `<b>Home market.</b> At ${usd(r.P0)} the country produces ${fmt(r.Qs0)}, consumes ${fmt(r.Qd0)} and imports the gap of ${fmt(r.Q0m)}.`;
+}
+
+function drawImportWorld(r) {
+  const f = frame(IMP.wmax, IMP.pmax);
+  let s = axes(f, IMP.wmax, IMP.pmax, "Qm (imports)", "Pw", "world");
+  let g = "";
+  const inQ = r.rent > 0 ? (r.rev > 0 ? st.omega : r.Qm) : 0;
+  if (r.dP > 1e-6) {
+    g += splitRegions(f, 0, r.Qm, r.P0, r.Pd, inQ, "c");
+    g += poly(f, [[r.Qm, r.Pd], [r.Qm, r.P0], [r.Q0m, r.P0]], "r-bd");
+  }
+  if (r.P0 - r.Pf > 1e-6) {
+    g += splitRegions(f, 0, r.Qm, r.Pf, r.P0, inQ, "e");
+    g += poly(f, [[r.Qm, r.P0], [r.Qm, r.Pf], [r.Q0m, r.P0]], "r-fg");
+  }
+  for (const p of new Set([r.P0, r.Pd, r.Pf].map(v => v.toFixed(6)))) g += line(f, 0, +p, IMP.wmax, +p, "guide");
+  g += line(f, r.Qm, 0, r.Qm, r.Pd, "guide") + line(f, r.Q0m, 0, r.Q0m, r.P0, "guide");
+  let cg = line(f, 0, 70, 100, 20, "curve");
+  let lbl = `<text class="clabel" x="${f.x(100) - 4}" y="${f.y(20) + 20}" text-anchor="end">ED</text>`;
+  const t = st.tOver, Om = st.omega;
+  if (!r.L) {
+    cg += line(f, 0, r.P0, 100, r.P0, "curve");
+    lbl += `<text class="clabel" x="${f.x(100) - 2}" y="${f.y(r.P0) - 7}" text-anchor="end">ES</text>`;
+    if (st.policy === "tariff" && r.dP > 1e-6) {
+      cg += line(f, 0, r.Pd, 100, r.Pd, "curve shift");
+      lbl += `<text class="clabel shift" x="${f.x(100) - 2}" y="${f.y(r.Pd) - 7}" text-anchor="end">ES′</text>`;
+    }
+    if (st.policy === "trq" && r.regime !== "slack") {
+      cg += pathL(f, [[0, r.P0], [Om, r.P0], [Om, r.P0 + t], [100, r.P0 + t]], "curve policy");
+      lbl += `<text class="clabel shift" x="${f.x(100) - 2}" y="${f.y(r.P0 + t) - 7}" text-anchor="end">ES′ (TRQ)</text>`;
+    }
+  } else {
+    cg += line(f, 0, 30, 100, 80, "curve");
+    lbl += `<text class="clabel" x="${f.x(100) - 2}" y="${f.y(80) + 18}" text-anchor="end">ES</text>`;
+    if (st.policy === "tariff" && r.dP > 1e-6) {
+      const sp = st.tMode === "specific" ? [[0, 30 + st.t], [100, 80 + st.t]] : [[0, 30 * (1 + st.tau / 100)], [100, 80 * (1 + st.tau / 100)]];
+      cg += line(f, sp[0][0], sp[0][1], sp[1][0], sp[1][1], "curve shift");
+      const qLab = Math.min(100, (IMP.pmax - 4 - sp[0][1]) / ((sp[1][1] - sp[0][1]) / 100));
+      lbl += `<text class="clabel shift" x="${f.x(qLab) - 6}" y="${f.y(sp[0][1] + (sp[1][1] - sp[0][1]) * qLab / 100) - 8}" text-anchor="end">ES′ = ES + tariff</text>`;
+    }
+    if (st.policy === "trq" && r.regime !== "slack") {
+      cg += pathL(f, [[0, 30], [Om, 30 + Om / 2], [Om, 30 + Om / 2 + t], [100, 80 + t]], "curve policy");
+      lbl += `<text class="clabel shift" x="${f.x(Om) + 6}" y="${f.y(30 + Om / 2 + t) - 8}">ES′ (TRQ)</text>`;
+    }
+  }
+  if (st.policy === "quota") {
+    cg += line(f, st.q0, 0, st.q0, IMP.pmax, "curve policy");
+    lbl += `<text class="clabel shift" x="${f.x(st.q0) + 6}" y="${M.t + 14}">quota</text>`;
+  }
+  g += `<g clip-path="url(#clip-world)">${cg}</g>` + lbl;
+  g += `<circle class="dot open" cx="${f.x(r.Q0m)}" cy="${f.y(r.P0)}" r="4.5"></circle>`;
+  if (r.Qm < r.Q0m - 1e-6) g += `<circle class="dot" cx="${f.x(r.Qm)}" cy="${f.y(r.Pd)}" r="4.5"></circle>`;
+  if (r.dP > 1e-6) {
+    const cl = r.rent > 0 && r.rev > 0 ? "" : "c";
+    if (cl) g += letter(f, r.Qm / 2, (r.P0 + r.Pd) / 2, "c", r.Qm, r.dP);
+    else {
+      g += letter(f, Om / 2, (r.P0 + r.Pd) / 2, "rent", Om, r.dP);
+      g += letter(f, (Om + r.Qm) / 2, (r.P0 + r.Pd) / 2, "rev", r.Qm - Om, r.dP);
+    }
+    g += letter(f, r.Qm + (r.Q0m - r.Qm) * 0.3, r.P0 + r.dP * 0.3, "b+d", r.Q0m - r.Qm, r.dP);
+  }
+  if (r.P0 - r.Pf > 1e-6) {
+    g += letter(f, r.Qm / 2, (r.P0 + r.Pf) / 2, "e", r.Qm, r.P0 - r.Pf);
+    g += letter(f, r.Qm + (r.Q0m - r.Qm) * 0.3, r.P0 - (r.P0 - r.Pf) * 0.3, "f+g", r.Q0m - r.Qm, r.P0 - r.Pf);
+  }
+  const pnames = [{ p: r.P0, name: "Pw" }];
+  if (r.dP > 1e-6) pnames.push({ p: r.Pd, name: "Pd" });
+  if (r.P0 - r.Pf > 1e-6) pnames.push({ p: r.Pf, name: "Pw′" });
+  const qs = [{ q: r.Q0m }, { q: r.Qm }];
+  if (st.policy === "trq" && r.regime === "over") qs.push({ q: Om });
+  s += g + priceTicks(f, pnames) + qtyTicks(f, qs);
+  if (st.policy === "trq" && r.regime === "over") s += `<text class="tick name" x="${f.x(Om)}" y="${H - M.b + 41}" text-anchor="middle">Ω</text>`;
+  document.getElementById("svg-world").innerHTML = s;
+  document.getElementById("cap-world").innerHTML = r.L
+    ? `<b>Trade market.</b> Imports fall ${fmt(r.Q0m)} → ${fmt(r.Qm)}. Foreign exporters now receive ${usd(r.Pf)} instead of ${usd(r.P0)}, so they bear ${usd(r.P0 - r.Pf)} of the ${usd(r.Pd - r.Pf)} wedge.`
+    : `<b>Trade market.</b> The country is a price taker: foreign supply is flat at ${usd(r.P0)}. Imports fall ${fmt(r.Q0m)} → ${fmt(r.Qm)}.`;
+}
+
+/* ---------- export diagrams ---------- */
+function drawExportHome(r) {
+  const f = frame(EXP.qmax, EXP.pmax);
+  let s = axes(f, EXP.qmax, EXP.pmax, "Q (home market)", "P", "home");
+  let g = "";
+  if (r.dP > 1e-6) {
+    g += poly(f, [[0, r.P0], [r.D1, r.P0], [r.D1, r.Pd], [0, r.Pd]], "r-a");
+    g += poly(f, [[r.D1, r.Pd], [r.D1, r.P0], [r.D0, r.P0]], "r-bd");
+    g += poly(f, [[r.D1, r.Pd], [r.D0, r.P0], [r.S0, r.P0], [r.S1, r.Pd]], "r-c");
+    g += poly(f, [[r.S0, r.P0], [r.S1, r.P0], [r.S1, r.Pd]], "r-bd");
+  }
+  if (r.P0 - r.Pf > 1e-6) g += poly(f, [[r.D1, r.Pf], [r.S1, r.Pf], [r.S1, r.P0], [r.D1, r.P0]], "r-e");
+  if (r.dP > 1e-6) g += `<rect class="outline" x="${f.x(r.D1)}" y="${f.y(r.Pd)}" width="${f.x(r.S1) - f.x(r.D1)}" height="${f.y(r.Pf) - f.y(r.Pd)}"></rect>`;
+  for (const p of new Set([r.P0, r.Pd, r.Pf].map(v => v.toFixed(6)))) g += line(f, 0, +p, EXP.qmax, +p, "guide");
+  for (const [q, p] of [[r.D0, r.P0], [r.S0, r.P0], [r.D1, r.Pd], [r.S1, r.Pd]]) g += line(f, q, 0, q, p, "guide");
+  g += `<g clip-path="url(#clip-home)">` + line(f, 100, 0, 10, 90, "curve") + line(f, 40, 0, 130, 90, "curve") + `</g>`;
+  g += `<text class="clabel" x="${f.x(10) + 8}" y="${f.y(88) + 4}">D</text><text class="clabel" x="${f.x(128) - 14}" y="${f.y(88) + 4}">S</text>`;
+  g += `<circle class="dot" cx="${f.x(70)}" cy="${f.y(30)}" r="3.2"></circle><text class="tick name" x="${f.x(70)}" y="${f.y(30) + 18}" text-anchor="middle">autarky</text>`;
+  if (r.dP > 1e-6) {
+    g += letter(f, r.D1 / 2, (r.P0 + r.Pd) / 2, "a", r.D1, r.dP);
+    g += letter(f, r.D1 + (r.D0 - r.D1) * 0.33, r.P0 + r.dP * 0.33, "b", r.D0 - r.D1, r.dP);
+    g += letter(f, (r.D0 + r.S0) / 2, (r.P0 + r.Pd) / 2, "c", r.S0 - r.D0, r.dP);
+    g += letter(f, r.S0 + (r.S1 - r.S0) * 0.67, r.P0 + r.dP * 0.33, "d", r.S1 - r.S0, r.dP);
+  }
+  if (r.P0 - r.Pf > 1e-6) g += letter(f, (r.D1 + r.S1) / 2, (r.P0 + r.Pf) / 2, "e", r.S1 - r.D1, r.P0 - r.Pf);
+  const pn = [{ p: r.P0, name: "Pw" }];
+  if (r.dP > 1e-6) pn.push({ p: r.Pd, name: "Pw′+s" });
+  if (r.P0 - r.Pf > 1e-6) pn.push({ p: r.Pf, name: "Pw′" });
+  s += g + priceTicks(f, pn) + qtyTicks(f, [{ q: r.D0 }, { q: r.D1 }, { q: r.S0 }, { q: r.S1 }]);
+  document.getElementById("svg-home").innerHTML = s;
+  document.getElementById("cap-home").innerHTML = `<b>Home (exporting) market.</b> Producers receive ${usd(r.Pd)}; home consumers also pay ${usd(r.Pd)}, so consumption falls ${fmt(r.D0)} → ${fmt(r.D1)} and output rises ${fmt(r.S0)} → ${fmt(r.S1)}. The dashed box is the subsidy bill s × X′.`;
+}
+
+function drawExportWorld(r) {
+  const f = frame(EXP.wmax, EXP.pmax);
+  let s = axes(f, EXP.wmax, EXP.pmax, "X (exports)", "Pw", "world");
+  let g = "";
+  if (r.dP > 1e-6) g += poly(f, [[r.X0, r.P0], [r.X, r.P0], [r.X, r.Pd]], "r-bd");
+  if (r.P0 - r.Pf > 1e-6) g += poly(f, [[0, r.Pf], [r.X, r.Pf], [r.X, r.P0], [0, r.P0]], "r-e");
+  if (r.dP > 1e-6) g += `<rect class="outline" x="${f.x(0)}" y="${f.y(r.Pd)}" width="${f.x(r.X) - f.x(0)}" height="${f.y(r.Pf) - f.y(r.Pd)}"></rect>`;
+  for (const p of new Set([r.P0, r.Pd, r.Pf].map(v => v.toFixed(6)))) g += line(f, 0, +p, EXP.wmax, +p, "guide");
+  g += line(f, r.X, 0, r.X, r.Pd, "guide") + line(f, r.X0, 0, r.X0, r.P0, "guide");
+  let cg = line(f, 0, 30, 100, 80, "curve");
+  let lbl = `<text class="clabel" x="${f.x(100) - 2}" y="${f.y(80) + 18}" text-anchor="end">ES</text>`;
+  if (r.L) { cg += line(f, 0, 70, 100, 20, "curve"); lbl += `<text class="clabel" x="${f.x(100) - 4}" y="${f.y(20) + 20}" text-anchor="end">ED (foreign)</text>`; }
+  else { cg += line(f, 0, r.P0, 100, r.P0, "curve"); lbl += `<text class="clabel" x="${f.x(100) - 2}" y="${f.y(r.P0) + 18}" text-anchor="end">ED (foreign)</text>`; }
+  if (st.s > 0) {
+    cg += line(f, 0, 30 - st.s, 100, 80 - st.s, "curve shift");
+    lbl += `<text class="clabel shift" x="${f.x(100) - 2}" y="${f.y(80 - st.s) + 18}" text-anchor="end">ES − s</text>`;
+  }
+  g += `<g clip-path="url(#clip-world)">${cg}</g>` + lbl;
+  g += `<circle class="dot open" cx="${f.x(r.X0)}" cy="${f.y(r.P0)}" r="4.5"></circle>`;
+  if (r.X > r.X0 + 1e-6) g += `<circle class="dot" cx="${f.x(r.X)}" cy="${f.y(r.Pf)}" r="4.5"></circle>`;
+  if (r.dP > 1e-6) g += letter(f, r.X0 + (r.X - r.X0) * 0.67, r.P0 + r.dP * 0.33, "b+d", r.X - r.X0, r.dP);
+  if (r.P0 - r.Pf > 1e-6) g += letter(f, r.X / 2, (r.P0 + r.Pf) / 2, "e", r.X, r.P0 - r.Pf);
+  const pn = [{ p: r.P0, name: "Pw" }];
+  if (r.dP > 1e-6) pn.push({ p: r.Pd, name: "Pw′+s" });
+  if (r.P0 - r.Pf > 1e-6) pn.push({ p: r.Pf, name: "Pw′" });
+  s += g + priceTicks(f, pn) + qtyTicks(f, [{ q: r.X0 }, { q: r.X }]);
+  document.getElementById("svg-world").innerHTML = s;
+  document.getElementById("cap-world").innerHTML = r.L
+    ? `<b>Trade market.</b> The subsidy shifts export supply down by s. Exports rise ${fmt(r.X0)} → ${fmt(r.X)} and the world price falls ${usd(r.P0)} → ${usd(r.Pf)}; foreign buyers pocket area e.`
+    : `<b>Trade market.</b> A small exporter cannot move the world price, so the full subsidy shows up in the home price. Exports rise ${fmt(r.X0)} → ${fmt(r.X)}.`;
+}
+
+/* ---------- ledger ---------- */
+function ledger(r) {
+  const rows = [];
+  if (r.kind === "import") {
+    rows.push(["Home consumers", "−(a+b+c+d)", -r.csLoss]);
+    rows.push(["Home producers", "+a", r.psGain]);
+    if (st.policy === "tariff") rows.push(["Government (tariff revenue)", r.L ? "+(c+e)" : "+c", r.rev]);
+    if (st.policy === "trq") rows.push(["Government (over-quota revenue)", "part of c" + (r.L ? "+e" : ""), r.rev]);
+    if (st.policy !== "tariff") rows.push([`Licence holders, ${r.rentHome ? "home" : "foreign"} (${st.policy === "trq" ? "in-quota rent" : "quota rent"})`, r.rentHome ? (st.policy === "trq" ? "rest of c" + (r.L ? "+e" : "") : (r.L ? "+(c+e)" : "+c")) : "leaves the country", r.rentHome ? r.rent : 0]);
+    rows.push(["Net home welfare", r.rentHome || st.policy === "tariff" ? (r.L ? "e − (b+d)" : "−(b+d)") : "−(b+c+d)", r.home, "total"]);
+    rows.push(["Foreign exporters", r.L ? "−(e+f+g)" + (r.rentHome ? "" : " + rent") : (r.rentHome ? "0" : "+ rent"), r.foreign, "sub"]);
+    rows.push(["World", r.L ? "−(b+d+f+g)" : "−(b+d)", r.world, "sub"]);
+  } else {
+    rows.push(["Home consumers", "−(a+b)", -r.csLoss]);
+    rows.push(["Home producers", "+(a+b+c)", r.psGain]);
+    rows.push(["Taxpayers (subsidy bill s·X′)", "−(b+c+d+e)", -r.cost]);
+    rows.push(["Net home welfare", r.L ? "−(b+d+e)" : "−(b+d)", r.home, "total"]);
+    rows.push(["Foreign importers", r.L ? "+ cheaper imports" : "0", r.foreign, "sub"]);
+    rows.push(["World", "−deadweight loss", r.world, "sub"]);
+  }
+  document.querySelector("#ledger tbody").innerHTML = rows.map(([g, f, v, cls]) =>
+    `<tr class="${cls || ""}"><td>${g}</td><td class="f">${f}</td><td class="v">${signed(v)}</td></tr>`).join("");
+
+  const facts = [];
+  if (r.kind === "import") {
+    facts.push(`Pw ${usd(r.P0)}`, `Pd ${usd(r.Pd)}`);
+    if (r.L) facts.push(`Pw′ ${usd(r.Pf)}`);
+    facts.push(`imports ${fmt(r.Q0m)} → ${fmt(r.Qm)}`);
+    if (st.policy === "trq") facts.push({ slack: "TRQ not binding", over: "over-quota tariff binds", atlimit: "access limit binds" }[r.regime]);
+    if (st.policy === "quota") facts.push(r.regime === "slack" ? "quota not binding" : "quota binding");
+    if (r.regime === "prohibitive") facts.push("prohibitive tariff");
+  } else {
+    facts.push(`Pw ${usd(r.P0)}`, `home price ${usd(r.Pd)}`);
+    if (r.L) facts.push(`Pw′ ${usd(r.Pf)}`);
+    facts.push(`exports ${fmt(r.X0)} → ${fmt(r.X)}`);
+  }
+  document.getElementById("facts").innerHTML = facts.map(x => `<span class="chip">${x}</span>`).join("");
+
+  const v = r.home;
+  const cls = v > 0.005 ? "good" : v < -0.005 ? "bad" : "neutral";
+  const icon = v > 0.005 ? "▲" : v < -0.005 ? "▼" : "●";
+  const txt = v > 0.005 ? `Home country gains ${usd(v)}` : v < -0.005 ? `Home country loses ${usd(-v)}` : "No net change for the home country";
+  document.getElementById("verdict").innerHTML = `<span class="verdict ${cls}"><span aria-hidden="true">${icon}</span>${txt}</span>`;
+}
+
+/* ---------- legend + story ---------- */
+function legendHTML() {
+  const sw = (cls, style) => `<span class="sw" style="${style}"></span>`;
+  const amber = "background: color-mix(in srgb, var(--area-a) 45%, transparent)";
+  const blue = "background: color-mix(in srgb, var(--area-bd) 42%, transparent)";
+  const red = "background: repeating-linear-gradient(45deg, var(--area-c) 0 2px, transparent 2px 5px)";
+  const aqua = "background: repeating-linear-gradient(-45deg, var(--area-e) 0 2px, transparent 2px 5px)";
+  const grey = "background: color-mix(in srgb, var(--area-fg) 35%, transparent)";
+  if (st.policy === "subsidy") return [
+    `<span>${sw("", amber)}a: consumers → producers</span>`,
+    `<span>${sw("", blue)}b, d: deadweight loss</span>`,
+    `<span>${sw("", red)}c: taxpayers → producers</span>`,
+    `<span>${sw("", aqua)}e: gift to foreign buyers (terms of trade)</span>`].join("");
+  const cName = st.policy === "tariff" ? "c: tariff revenue" : st.policy === "quota" ? "c: quota rent" : "c: in-quota rent (cross-hatch) + over-quota revenue";
+  return [
+    `<span>${sw("", amber)}a: producer surplus gain</span>`,
+    `<span>${sw("", blue)}b, d: deadweight loss</span>`,
+    `<span>${sw("", red)}${cName}</span>`,
+    `<span>${sw("", aqua)}e: paid by foreign exporters</span>`,
+    `<span>${sw("", grey)}f+g: foreign deadweight loss</span>`].join("");
+}
+
+function storyText(r) {
+  if (r.kind === "export") {
+    if (st.s <= 0) return "No subsidy: the country exports at the world price.";
+    return r.L
+      ? `A ${usd(st.s)} per-unit export subsidy lets exporters sell abroad for ${usd(r.Pf)} while still collecting ${usd(r.Pd)}. Home consumers now pay ${usd(r.Pd)} too, because producers will not sell at home for less than they get by exporting. The world price falls by ${usd(r.P0 - r.Pf)}, so part of every subsidy dollar flows to foreign buyers. Taxpayers pay ${usd(r.cost)}; producers gain ${usd(r.psGain)}; the country as a whole loses ${usd(-r.home)}.`
+      : `A ${usd(st.s)} subsidy raises the price exporters receive, and so the home price, from ${usd(r.P0)} to ${usd(r.Pd)}. The world price does not move. Taxpayers pay ${usd(r.cost)} and the country loses the two deadweight triangles, ${usd(-r.home)}.`;
+  }
+  const who = r.L ? `The world price falls from ${usd(r.P0)} to ${usd(r.Pf)}: foreign exporters absorb part of the wedge, which is area e.` : `The world price stays at ${usd(r.P0)} because this country is too small to move it.`;
+  if (st.policy === "tariff") {
+    if (r.dP <= 1e-6) return "No tariff: the country imports at the world price.";
+    const tt = st.tMode === "specific" ? `A ${usd(st.t)} per-unit tariff` : `A ${fmt(st.tau)}% ad valorem tariff`;
+    return `${tt} raises the domestic price from ${usd(r.P0)} to ${usd(r.Pd)} and cuts imports from ${fmt(r.Q0m)} to ${fmt(r.Qm)} units. ${who}${r.regime === "prohibitive" ? " The tariff is prohibitive: trade stops and the country returns to autarky." : ""}`;
+  }
+  if (st.policy === "quota") {
+    if (r.regime === "slack") return `The quota of ${fmt(st.q0)} is above free-trade imports (${fmt(r.Q0m)}), so it does nothing.`;
+    return `Capping imports at ${fmt(st.q0)} units bids the domestic price up to ${usd(r.Pd)}, the price at which home excess demand equals the quota. ${who} The price gap on each imported unit is quota rent of ${usd(r.rent)}, captured by ${r.rentHome ? "home importers holding the licences" : "foreign exporters (as under a voluntary export restraint), so it is lost to the home country"}.`;
+  }
+  if (r.regime === "slack") return `Free-trade imports (${fmt(r.Q0m)}) fit within the access limit Ω = ${fmt(st.omega)}, so everything enters at the in-quota rate and the TRQ has no effect.`;
+  if (r.regime === "atlimit") return `The over-quota tariff of ${usd(st.tOver)} is high enough that nobody imports beyond Ω = ${fmt(st.omega)}. The TRQ works like a quota of ${fmt(st.omega)}: the domestic price rises to ${usd(r.Pd)} and all of the wedge is in-quota rent. ${who}`;
+  return `Imports beyond Ω = ${fmt(st.omega)} pay the ${usd(st.tOver)} over-quota tariff, so the marginal unit costs ${usd(r.Pd)} and that becomes the domestic price. Imports fall to ${fmt(r.Qm)}: ${fmt(st.omega)} units enter at the in-quota rate (rent ${usd(r.rent)}) and ${fmt(r.Qm - st.omega)} pay the tariff (revenue ${usd(r.rev)}). ${who}`;
+}
+
+/* ---------- welfare chart ---------- */
+const CW = 520, CH = 270, CM = { l: 70, r: 18, t: 16, b: 44 };
+let curveCache = null;
+function niceTicks(lo, hi, n) {
+  const span = hi - lo || 1;
+  const raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(k => k * mag).find(s => span / s <= n) || 10 * mag;
+  const out = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(10));
+  return out;
+}
+function drawWelfare() {
+  const ins = instrument(st);
+  const N = 120, xs = [], home = [], world = [];
+  for (let i = 0; i <= N; i++) {
+    const v = ins.min + (ins.max - ins.min) * i / N;
+    const r = solve({ ...st, [ins.key]: v });
+    xs.push(v); home.push(r.home); world.push(r.world);
+  }
+  const all = home.concat(world, [0]);
+  let lo = Math.min(...all), hi = Math.max(...all);
+  const pad = (hi - lo) * 0.08 || 10; lo -= pad; hi += pad;
+  const yt = niceTicks(lo, hi, 5); lo = Math.min(lo, yt[0]); hi = Math.max(hi, yt[yt.length - 1]);
+  const X = v => CM.l + (v - ins.min) / (ins.max - ins.min) * (CW - CM.l - CM.r);
+  const Y = v => CH - CM.b - (v - lo) / (hi - lo) * (CH - CM.t - CM.b);
+  let s = "";
+  for (const t of yt) s += `<line class="grid" x1="${CM.l}" x2="${CW - CM.r}" y1="${Y(t)}" y2="${Y(t)}"></line><text class="tick" x="${CM.l - 6}" y="${Y(t) + 4}" text-anchor="end">${t < 0 ? "−" : ""}$${fmt(Math.abs(t), 0)}</text>`;
+  s += `<line class="zero" x1="${CM.l}" x2="${CW - CM.r}" y1="${Y(0)}" y2="${Y(0)}"></line>`;
+  for (const t of niceTicks(ins.min, ins.max, 6)) s += `<text class="tick" x="${X(t)}" y="${CH - CM.b + 16}" text-anchor="middle">${fmt(t)}</text>`;
+  s += `<text class="axlabel" x="${CW - CM.r}" y="${CH - 6}" text-anchor="end">${ins.label}</text>`;
+  const pl = arr => arr.map((v, i) => X(xs[i]).toFixed(1) + "," + Y(v).toFixed(1)).join(" ");
+  s += `<polyline class="s2" points="${pl(world)}"></polyline><polyline class="s1" points="${pl(home)}"></polyline>`;
+  // optimum marker
+  let note = "";
+  let bi = 0; home.forEach((v, i) => { if (v > home[bi]) bi = i; });
+  if (home[bi] > 0.5) {
+    s += `<circle class="dot open" cx="${X(xs[bi])}" cy="${Y(home[bi])}" r="4"></circle><text class="tick" x="${X(xs[bi])}" y="${Y(home[bi]) - 9}" text-anchor="middle">best ≈ ${ins.unit(xs[bi])}</text>`;
+    note = `Home welfare peaks at about ${ins.unit(xs[bi])} (gain ≈ ${usd(home[bi])}). That is the large country’s optimal policy; the world as a whole still loses.`;
+  } else {
+    note = st.policy === "subsidy" ? "Any export subsidy lowers home welfare, and the loss grows with the subsidy." : "For a price taker every restriction lowers home welfare: there is no terms-of-trade gain to offset the deadweight loss.";
+  }
+  if (st.policy === "quota" || st.policy === "trq") if (!(st.rentTo === "home")) note += " With rents going abroad the home country loses even more.";
+  // current
+  const cur = solve(st);
+  const cv = st[ins.key];
+  s += `<line class="cross" x1="${X(cv)}" x2="${X(cv)}" y1="${CM.t}" y2="${CH - CM.b}" stroke-dasharray="3 3"></line>`;
+  s += `<circle class="dot" cx="${X(cv)}" cy="${Y(cur.home)}" r="5" style="fill:var(--series-1)"></circle>`;
+  s += `<text class="tick" x="${X(cv) + 6}" y="${CH - CM.b - 6}">now</text>`;
+  s += `<g id="hover"></g><rect id="hit" x="${CM.l}" y="${CM.t}" width="${CW - CM.l - CM.r}" height="${CH - CM.t - CM.b}" fill="transparent" style="cursor:crosshair"></rect>`;
+  document.getElementById("svg-welfare").innerHTML = s;
+  document.getElementById("wc-note").textContent = note + " Hover to read values; click to set the lever.";
+  document.getElementById("wc-title").textContent = "Net welfare as the lever moves";
+  curveCache = { ins, xs, home, world, X, Y };
+}
+
+function hoverAt(evt, click) {
+  if (!curveCache) return;
+  const svg = document.getElementById("svg-welfare");
+  const pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+  const { ins, xs, home, world, X, Y } = curveCache;
+  const frac = Math.min(1, Math.max(0, (p.x - CM.l) / (CW - CM.l - CM.r)));
+  const i = Math.round(frac * (xs.length - 1));
+  if (click) {
+    const step = ins.key === "s" ? 0.5 : 1;
+    const v = Math.round(xs[i] / step) * step;
+    set({ [ins.key]: v }); return;
+  }
+  document.getElementById("hover").innerHTML =
+    `<line class="cross" x1="${X(xs[i])}" x2="${X(xs[i])}" y1="${CM.t}" y2="${CH - CM.b}"></line>` +
+    `<circle class="dot" cx="${X(xs[i])}" cy="${Y(world[i])}" r="4" style="fill:var(--series-2)"></circle>` +
+    `<circle class="dot" cx="${X(xs[i])}" cy="${Y(home[i])}" r="4" style="fill:var(--series-1)"></circle>`;
+  const tip = document.getElementById("tip");
+  tip.hidden = false;
+  tip.innerHTML = `<div class="mono">${ins.unit(xs[i])}</div><div>Home <span class="mono">${signed(home[i])}</span></div><div>World <span class="mono">${signed(world[i])}</span></div>`;
+  const box = svg.getBoundingClientRect();
+  const scale = box.width / CW;
+  let left = X(xs[i]) * scale + 12;
+  if (left + 150 > box.width) left = X(xs[i]) * scale - 150;
+  tip.style.left = left + "px"; tip.style.top = (CM.t * scale + 4) + "px";
+}
+
+/* ---------- controls ---------- */
+const SL = ["pw", "pwx", "t", "tau", "q0", "omega", "tOver", "s"];
+function syncControls() {
+  const seg = (id, val) => document.querySelectorAll(`#${id} button`).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === val)));
+  seg("seg-policy", st.policy); seg("seg-size", st.size); seg("seg-tmode", st.tMode); seg("seg-rent", st.rentTo);
+  for (const k of SL) {
+    const el = document.getElementById(k);
+    el.value = st[k];
+    document.getElementById(k + "-o").textContent = (k === "tau" ? fmt(st[k]) + "%" : (k === "q0" || k === "omega") ? fmt(st[k]) : "$" + fmt(st[k]));
+  }
+  const imp = st.policy !== "subsidy";
+  const vis = {
+    "tariff": st.policy === "tariff", "quota": st.policy === "quota", "trq": st.policy === "trq", "subsidy": st.policy === "subsidy",
+    "quota trq": st.policy === "quota" || st.policy === "trq",
+    "small-import": imp && st.size === "small", "small-export": !imp && st.size === "small",
+    "tariff-specific": st.policy === "tariff" && st.tMode === "specific",
+    "tariff-adval": st.policy === "tariff" && st.tMode === "adval"
+  };
+  document.querySelectorAll("[data-show]").forEach(el => { el.hidden = !vis[el.dataset.show]; });
+}
+
+function render() {
+  syncControls();
+  const r = solve(st);
+  if (r.kind === "import") { drawImportHome(r); drawImportWorld(r); }
+  else { drawExportHome(r); drawExportWorld(r); }
+  document.getElementById("legend").innerHTML = legendHTML();
+  document.getElementById("story").textContent = storyText(r);
+  ledger(r);
+  drawWelfare();
+}
+function set(patch) { Object.assign(st, patch); render(); }
+
+for (const [id, key] of [["seg-policy", "policy"], ["seg-size", "size"], ["seg-tmode", "tMode"], ["seg-rent", "rentTo"]]) {
+  document.getElementById(id).addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    stopPlay();
+    const patch = { [key]: b.dataset.v };
+    set(patch);
+  });
+}
+for (const k of SL) document.getElementById(k).addEventListener("input", e => { stopPlay(); set({ [k]: parseFloat(e.target.value) }); });
+document.getElementById("reset").addEventListener("click", () => { stopPlay(); set({ ...DEFAULT, ...PRESETS[LECTURE_FOR[st.policy]] }); });
+
+let raf = null;
+function stopPlay() { if (raf) cancelAnimationFrame(raf); raf = null; document.getElementById("play").textContent = "Sweep the lever from zero"; }
+document.getElementById("play").addEventListener("click", () => {
+  if (raf) { stopPlay(); return; }
+  const ins = instrument(st);
+  const target = st[ins.key];
+  const from = ins.key === "q0" ? solve({ ...st, q0: 100 }).Q0m : ins.min;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce || Math.abs(target - from) < 1e-9) { set({ [ins.key]: target }); return; }
+  const t0 = performance.now(), dur = 3200;
+  document.getElementById("play").textContent = "Stop";
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur);
+    const ease = 1 - Math.pow(1 - k, 2);
+    const v = from + (target - from) * ease;
+    set({ [ins.key]: Math.round(v * 2) / 2 });
+    if (k < 1) raf = requestAnimationFrame(step); else stopPlay();
+  };
+  raf = requestAnimationFrame(step);
+});
+
+const svgW = document.getElementById("svg-welfare");
+svgW.addEventListener("pointermove", e => hoverAt(e, false));
+svgW.addEventListener("pointerleave", () => { document.getElementById("tip").hidden = true; const h = document.getElementById("hover"); if (h) h.innerHTML = ""; });
+svgW.addEventListener("click", e => hoverAt(e, true));
+
+document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => loadPreset(b.dataset.preset)));
+function loadPreset(id) {
+  stopPlay();
+  st = { ...DEFAULT, ...PRESETS[id] };
+  render();
+  document.getElementById("lab").scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+
+/* ---------- worked problems ---------- */
+const m = x => `<span class="mono">${x}</span>`;
+function importSteps(p, r) {
+  const L = r.L, out = [];
+  if (L) out.push(`<b>World market.</b> Imports ${m("Qm = 140 − 2P")}, foreign excess supply ${m("Qx = −60 + 2P")}. Set ${m("Qm = Qx")}: ${m("140 − 2P = −60 + 2P ⇒ P = $50, Q<sub>T</sub> = 40")}.`);
+  out.push(`<b>Free trade at ${usd(r.P0)}.</b> ${m(`Qd = 160 − 1.5(${fmt(r.P0)}) = ${fmt(r.Qd0)}`)}, ${m(`Qs = 20 + 0.5(${fmt(r.P0)}) = ${fmt(r.Qs0)}`)}, imports ${m(`= ${fmt(r.Q0m)}`)}.`);
+  if (p.policy === "tariff" && !L) out.push(`<b>With the tariff</b> importers pay ${m(`Pw + t = ${fmt(r.P0)} + ${fmt(p.t)} = ${usd(r.Pd)}`)}. The world price does not change.`);
+  if (p.policy === "tariff" && L) out.push(`<b>With the tariff.</b> Inverse curves: ${m("ED: P = 70 − ½Q")}, ${m("ES: P = 30 + ½Q")}. Importers face ${m(`(30 + ${fmt(p.t)}) + ½Q`)}; set equal to ${m("70 − ½Q")} ⇒ ${m(`Q<sub>T</sub> = ${fmt(r.Qm)}`)}. Exporters receive ${m(`30 + ½(${fmt(r.Qm)}) = ${usd(r.Pf)}`)}; importers pay ${m(`${usd(r.Pf)} + ${usd(p.t)} = ${usd(r.Pd)}`)}.`);
+  if (p.policy === "quota" && !L) out.push(`<b>With the quota</b> the domestic price must clear ${fmt(p.q0)} units of imports: ${m(`140 − 2P = ${fmt(p.q0)} ⇒ Pd = ${usd(r.Pd)}`)}. The world price stays ${usd(r.P0)}.`);
+  if (p.policy === "quota" && L) out.push(`<b>With the quota</b> of ${fmt(p.q0)}: importers will pay ${m(`70 − ½(${fmt(p.q0)}) = ${usd(r.Pd)}`)}; exporters accept ${m(`30 + ½(${fmt(p.q0)}) = ${usd(r.Pf)}`)}. Same outcome as the ${usd(r.Pd - r.Pf)} tariff.`);
+  if (p.policy === "trq") out.push(`<b>With the TRQ.</b> The marginal import pays ${m(`${usd(r.P0)} + ${usd(p.tOver)} = ${usd(r.P0 + p.tOver)}`)}. At that price ${m(`Qm′ = 140 − 2(${fmt(r.P0 + p.tOver)}) = ${fmt(r.Qm)}`)} > Ω = ${fmt(p.omega)}, so the over-quota tariff sets the domestic price at ${usd(r.Pd)}. ${fmt(p.omega)} units enter tariff-free; ${fmt(r.Qm - p.omega)} pay ${usd(p.tOver)}.`);
+  out.push(`<b>Quantities at ${usd(r.Pd)}.</b> ${m(`Qd = ${fmt(r.Qd1)}`)}, ${m(`Qs = ${fmt(r.Qs1)}`)}, imports ${m(`= ${fmt(r.Qm)}`)}.`);
+  const dP = fmt(r.dP);
+  out.push(`<b>Producer gain a</b> ${m(`= ${dP} × ${fmt(r.Qs0)} + ½(${fmt(r.Qs1 - r.Qs0)})(${dP}) = ${usd(r.a)}`)}.`);
+  if (p.policy === "trq") out.push(`<b>Area c</b> ${m(`= ${dP} × ${fmt(r.Qm)} = ${usd(r.c)}`)}: in-quota rent ${m(`${usd(p.tOver)} × ${fmt(p.omega)} = ${usd(r.rent)}`)} plus tariff revenue ${m(`${usd(p.tOver)} × ${fmt(r.Qm - p.omega)} = ${usd(r.rev)}`)}.`);
+  else out.push(`<b>${p.policy === "tariff" ? "Tariff revenue" : "Quota rent"} c</b> ${m(`= ${dP} × ${fmt(r.Qm)} = ${usd(r.c)}`)}${p.policy === "quota" ? " (price gap times the quota quantity, not the original imports)" : ""}.`);
+  if (L) out.push(`<b>Terms-of-trade gain e</b> ${m(`= (${fmt(r.P0)} − ${fmt(r.Pf)}) × ${fmt(r.Qm)} = ${usd(r.e)}`)}. Total ${p.policy === "tariff" ? "revenue" : "rent"} ${m(`c + e = ${usd(r.c + r.e)}`)}.`);
+  out.push(`<b>Deadweight loss</b> ${m(`b + d = ½(${fmt(r.Qs1 - r.Qs0)})(${dP}) + ½(${fmt(r.Qd0 - r.Qd1)})(${dP}) = ${usd(r.b)} + ${usd(r.d)} = ${usd(r.b + r.d)}`)}.`);
+  out.push(`<b>Consumer loss</b> ${m(`a + b + c + d = ${usd(r.csLoss)}`)}. Check: ${m(`½(${dP})(${fmt(r.Qd0)} + ${fmt(r.Qd1)}) = ${usd(r.csLoss)}`)}.${L ? " Area e is not part of it: foreign exporters pay e." : ""}`);
+  const ans = L ? `Net national welfare ${m(`e − (b + d) = ${usd(r.e)} − ${usd(r.b + r.d)} = ${signed(r.home)}`)}: the country is ${r.home > 0 ? "better" : "worse"} off, at the exporting country’s expense.`
+                : `Net national welfare ${m(`−(b + d) = ${signed(r.home)}`)}. A small country always loses from the restriction.`;
+  return { steps: out, answer: ans };
+}
+function exportSteps(p, r) {
+  const out = [];
+  out.push(`<b>Setup.</b> Home ${m("Qd = 100 − P")}, ${m("Qs = 40 + P")} ⇒ export supply ${m("Qx = −60 + 2P")}. Foreign import demand ${m("Qm = 140 − 2P")}. Free trade: ${m("P = $50, X = 40")}.`);
+  out.push(`<b>With subsidy s = ${usd(p.s)}.</b> Exporters receive ${m("Pw′ + s")}. Inverse curves: ${m("30 + ½X = (70 − ½X) + " + fmt(p.s))} ⇒ ${m(`X = ${fmt(r.X)}`)}, ${m(`Pw′ = ${usd(r.Pf)}`)}, home price ${m(`${usd(r.Pd)}`)}.`);
+  out.push(`<b>Home quantities.</b> At ${usd(r.Pd)}: ${m(`Qd = ${fmt(r.D1)}`)} (was ${fmt(r.D0)}), ${m(`Qs = ${fmt(r.S1)}`)} (was ${fmt(r.S0)}).`);
+  out.push(`<b>Consumers</b> lose ${m(`a + b = ½(${fmt(r.dP)})(${fmt(r.D0)} + ${fmt(r.D1)}) = ${usd(r.csLoss)}`)}.`);
+  out.push(`<b>Producers</b> gain ${m(`a + b + c = ½(${fmt(r.dP)})(${fmt(r.S0)} + ${fmt(r.S1)}) = ${usd(r.psGain)}`)}.`);
+  out.push(`<b>Taxpayers</b> pay ${m(`s × X′ = ${fmt(p.s)} × ${fmt(r.X)} = ${usd(r.cost)}`)} = b + c + d + e.`);
+  out.push(`<b>Foreign importers</b> gain ${m(`½(${fmt(r.P0 - r.Pf)})(${fmt(r.X0)} + ${fmt(r.X)}) = ${usd(r.foreign)}`)}; foreign producers lose from the lower price (inside that net figure).`);
+  return { steps: out, answer: `Home: ${m(`−(b + d + e) = ${signed(r.home)}`)}. World: ${m(signed(r.world))}. Countries still subsidize because producers gain ${usd(r.psGain)} in concentrated benefits while the cost is spread over taxpayers and consumers.` };
+}
+
+const PROBLEMS = [
+  { id: "p1", tag: "Slides 7–9 · small country", title: "Tariff, small country",
+    given: "Qd = 160 − 1.5P<br>Qs = 20 + 0.5P<br>Pw = $30, specific tariff t = $10",
+    qs: ["Quantity imported with no tariff?", "Impact of the $10 tariff on imports?", "Consumer surplus lost, tariff revenue, producer gain, deadweight loss?"] },
+  { id: "p2", tag: "Slides 12–15 · large country", title: "Tariff, large country",
+    given: "Qm = 140 − 2P (home import demand)<br>Qx = −60 + 2P (foreign excess supply)<br>specific tariff t = $10",
+    qs: ["World price and quantity traded?", "Effect of the tariff on the world price and trade?", "CS loss, PS gain, tariff revenue, DWL. Is the country better off?"] },
+  { id: "p3", tag: "Slides 18–20 · small country", title: "Import quota, small country",
+    given: "Qm = 140 − 2P<br>Pw = $40 (imports 60)<br>quota Q<sub>0</sub> = 35",
+    qs: ["New domestic price?", "Quota rent, producer gain, DWL, consumer loss?"] },
+  { id: "p4", tag: "Slides 23–24 · large country", title: "Import quota, large country",
+    given: "Qm = 140 − 2P, Qx = −60 + 2P<br>imports restricted to 30 units",
+    qs: ["Show the result matches the $10 tariff.", "What changes when the wedge is quota rent instead of revenue?"] },
+  { id: "p5", tag: "Slides 29–30 · small country", title: "Tariff-rate quota, small country",
+    given: "Qm = 140 − 2P, Pw = $30 (imports 80)<br>access limit Ω = 30<br>over-quota tariff = $15",
+    qs: ["Total imports under the TRQ?", "In-quota rent, tariff revenue and deadweight loss?"] },
+  { id: "p6", tag: "Slides 32–33 · large exporter (new numbers)", title: "Export subsidy, large country",
+    given: "Home Qd = 100 − P, Qs = 40 + P<br>Foreign Qm = 140 − 2P<br>subsidy s = $10 per unit exported",
+    qs: ["New world price, home price and exports?", "Effect on home consumers, producers, taxpayers and foreign buyers?", "Net effect at home and in the world? Why subsidize anyway?"] }
+];
+
+function renderProblems() {
+  document.getElementById("prob-list").innerHTML = PROBLEMS.map(pb => {
+    const p = { ...DEFAULT, ...PRESETS[pb.id] };
+    const r = solve(p);
+    const { steps, answer } = r.kind === "import" ? importSteps(p, r) : exportSteps(p, r);
+    return `<article class="prob">
+      <div class="tag">${pb.tag}</div>
+      <h3>${pb.title}</h3>
+      <div class="given">${pb.given}</div>
+      <ol class="q">${pb.qs.map(q => `<li>${q}</li>`).join("")}</ol>
+      <div class="actions"><button type="button" class="btn" data-load="${pb.id}">Load into the simulator</button>${pb.id === "p2" ? `<a class="btn solid" href="#practice" style="text-decoration:none">Solve it yourself, step by step</a>` : ""}</div>
+      <details><summary>Step-by-step solution</summary><ol class="steps">${steps.map(s => `<li>${s}</li>`).join("")}</ol><p class="answer">${answer}</p></details>
+    </article>`;
+  }).join("");
+  document.querySelectorAll("[data-load]").forEach(b => b.addEventListener("click", () => loadPreset(b.dataset.load)));
+}
+
+function renderPitfalls() {
+  const r2 = solve({ ...DEFAULT, ...PRESETS.p2 });
+  const r3 = solve({ ...DEFAULT, ...PRESETS.p3 });
+  const r5 = solve({ ...DEFAULT, ...PRESETS.p5 });
+  const items = [
+    ["Consumer loss never includes e",
+     `In the large-country tariff, consumers pay ${usd(r2.Pd)} instead of ${usd(r2.P0)}: their loss is ½(${fmt(r2.dP)})(${fmt(r2.Qd0)} + ${fmt(r2.Qd1)}) = ${usd(r2.csLoss)}, which is a + b + c + d. Area e (${usd(r2.e)}) is tariff revenue paid by foreign exporters through the lower world price, so adding it to the consumer loss double-counts it.`],
+    ["Read the triangle bases off the curves",
+     `At ${usd(r2.Pd)}, Qd = 160 − 1.5(${fmt(r2.Pd)}) = ${fmt(r2.Qd1)}, so d = ½(${fmt(r2.Qd0)} − ${fmt(r2.Qd1)})(${fmt(r2.dP)}) = ${usd(r2.d)} and b + d = ${usd(r2.b + r2.d)}. Rounding the base to a whole number moves the deadweight loss and the net-gain verdict. Net gain here: e − (b + d) = ${usd(r2.home)}.`],
+    ["Quota rent uses the quota quantity",
+     `With imports cut to ${fmt(r3.Qm)}, rent is (${fmt(r3.Pd)} − ${fmt(r3.P0)}) × ${fmt(r3.Qm)} = ${usd(r3.rent)}, not the price gap times the old import volume of ${fmt(r3.Q0m)}. The consumer loss is then ${usd(r3.csLoss)}; check it directly as ½(${fmt(r3.dP)})(${fmt(r3.Qd0)} + ${fmt(r3.Qd1)}).`],
+    ["Under a TRQ, area b on the ED diagram is rent",
+     `The ${fmt(st.omega)} in-quota units sell at the domestic price ${usd(r5.Pd)} but cost only ${usd(r5.P0)}. The ${usd(r5.rent)} gap goes to whoever holds the import licences, not to consumers. The area under the excess-demand curve is the importing country’s net surplus (consumers plus producers), so the consumers’ own loss is ½(${fmt(r5.dP)})(${fmt(r5.Qd0)} + ${fmt(r5.Qd1)}) = ${usd(r5.csLoss)}.`]
+  ];
+  document.getElementById("pit-list").innerHTML = items.map(([h, p]) => `<article class="pit"><h3>${h}</h3><p>${p}</p></article>`).join("");
+}
+
+/* ---------- quiz ---------- */
+function renderQuiz() {
+  const r3 = solve({ ...DEFAULT, ...PRESETS.p3 });
+  const r2 = solve({ ...DEFAULT, ...PRESETS.p2 });
+  const Q = [
+    { q: "A small importing country puts a $10 tariff on wheat. What happens to the world price?",
+      o: ["It rises by $10", "It is unchanged", "It falls by $10", "It falls by less than $10"], a: 1,
+      why: "A small country faces a flat foreign supply curve: it can buy any quantity at Pw. The whole tariff is passed on to home buyers." },
+    { q: "Why can a tariff raise national welfare for a large importer?",
+      o: ["Tariff revenue c exceeds the consumer loss", "Producers gain more than consumers lose", "The terms-of-trade gain e can exceed the deadweight loss b + d", "Imports rise"], a: 2,
+      why: `The tariff pushes the world price down, so foreign exporters pay area e. In the lecture example e = ${usd(r2.e)} and b + d = ${usd(r2.b + r2.d)}, a net gain of ${usd(r2.home)}.` },
+    { q: "A quota and a tariff that allow the same import volume differ in…",
+      o: ["the domestic price", "the deadweight loss", "who collects the price wedge", "the world price"], a: 2,
+      why: "Prices, quantities and deadweight loss are identical. Under the tariff the government collects revenue; under the quota the licence holders collect rent, possibly foreigners." },
+    { q: "Under a TRQ, imports exceed the access limit. What sets the domestic price?",
+      o: ["The world price", "World price plus the in-quota tariff", "World price plus the over-quota tariff", "The access limit"], a: 2,
+      why: "The marginal unit pays the over-quota tariff, and every unit sells at the same domestic price, so in-quota units earn a rent equal to the tariff." },
+    { q: `Pw = $40, a quota of 35 raises the domestic price to $52.50. What is the quota rent?`,
+      o: ["$12.50 × 60 = $750", `$12.50 × 35 = ${usd(r3.rent)}`, "$12.50 × 40 = $500", "Zero, since no tariff is collected"], a: 1,
+      why: "Rent accrues only on units actually imported under the quota. The original 60 units no longer enter." },
+    { q: "A large exporter introduces an export subsidy. Its national welfare…",
+      o: ["rises if the world price falls", "is unchanged: it is a transfer", "falls by b + d + e", "rises by the producer gain"], a: 2,
+      why: "Producers gain a + b + c, but consumers lose a + b and taxpayers pay b + c + d + e. Part of the subsidy (e) leaks to foreign buyers through the lower world price." }
+  ];
+  let right = 0, answered = 0;
+  const upd = () => { document.getElementById("score").textContent = answered ? `Score: ${right} / ${answered} answered` : ""; };
+  document.getElementById("quiz-list").innerHTML = Q.map((x, i) => `<article class="qcard" data-i="${i}">
+    <h3>${i + 1}. ${x.q}</h3>
+    <div class="opts">${x.o.map((o, j) => `<button type="button" class="opt" data-j="${j}">${o}</button>`).join("")}</div>
+    <p class="fb" aria-live="polite"></p></article>`).join("");
+  document.querySelectorAll(".qcard").forEach(card => {
+    const x = Q[+card.dataset.i];
+    card.addEventListener("click", e => {
+      const b = e.target.closest("button.opt"); if (!b || card.dataset.done) return;
+      card.dataset.done = "1"; answered++;
+      const j = +b.dataset.j;
+      card.querySelectorAll("button.opt")[x.a].classList.add("right");
+      if (j === x.a) { right++; card.querySelector(".fb").textContent = "Correct. " + x.why; }
+      else { b.classList.add("wrong"); card.querySelector(".fb").textContent = "Not quite. " + x.why; }
+      upd();
+    });
+  });
+}
+
+/* ---------- soybean case (data: UN Comtrade, injected by build_soy_data.py) ---------- */
+const SOY = /*SOYDATA:start*/{"source":"UN Comtrade (comtradeapi.un.org), HS 1201 soya beans. China imports as reported by China; US exports as reported by the United States. Pulled 29 Oct 2026.","gap2017":0.0667,"annual":{"years":[2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"World":[71.403,81.69,74.093,95.534,88.037,88.513,100.314,95.725,91.081,87.388,105.033],"World_usd":[40.262,34.79,33.981,39.638,38.087,35.342,39.546,53.083,61.236,59.444,52.726],"US":[30.029,28.413,30.011,32.853,16.64,16.944,25.874,31.623,29.533,22.433,22.134],"US_usd":[16.329,12.41,13.764,13.941,7.061,6.682,10.65,16.558,19.108,15.3,12.04],"Brazil":[32.005,40.077,33.909,50.927,66.082,57.675,64.277,58.064,54.394,59.67,74.647],"Brazil_usd":[18.724,16.887,15.552,20.916,28.843,23.0,24.906,33.091,37.321,40.954,36.456],"Argentina":[6.004,9.437,7.044,6.581,1.464,8.791,7.456,3.711,3.65,1.992,4.102],"Argentina_usd":[3.362,3.916,3.231,2.683,0.621,3.577,2.897,2.13,2.427,1.245,2.082]},"monthly":{"months":["2017-01","2017-02","2017-03","2017-04","2017-05","2017-06","2017-07","2017-08","2017-09","2017-10","2017-11","2017-12","2018-01","2018-02","2018-03","2018-04","2018-05","2018-06","2018-07","2018-08","2018-09","2018-10","2018-11","2018-12","2019-01","2019-02","2019-03","2019-04","2019-05","2019-06","2019-07","2019-08","2019-09","2019-10","2019-11","2019-12","2020-01","2020-02","2020-03","2020-04","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12"],"World":[7.132,5.449,6.211,7.751,9.063,7.072,9.206,7.798,7.498,5.167,8.246,8.571,8.478,5.426,5.664,6.921,9.688,8.699,7.974,9.15,8.01,6.921,5.384,5.723,7.376,4.456,4.916,7.64,7.342,6.462,8.641,9.48,8.195,6.181,8.281,9.542,8.008,5.504,4.278,6.715,9.377,11.159,10.093,9.605,9.789,8.679,9.585,7.523],"World_usd":[3.3205,2.3872,2.7211,3.3959,3.9708,3.0986,4.0335,3.4162,3.2848,2.4058,3.6127,3.9909,3.5523,2.2611,2.3925,2.9728,4.2182,3.8775,3.5418,3.9484,3.4219,3.0109,2.3407,2.5488,3.306,1.9527,2.0107,3.0593,2.8661,2.4298,3.2637,3.6677,3.1818,2.4091,3.3163,3.879,3.2391,2.2412,1.721,2.6222,3.5951,4.2082,3.7817,3.6254,3.7477,3.4744,4.0149,3.2746],"US":[6.318,4.375,4.167,1.738,1.396,0.356,0.455,0.166,0.873,1.176,4.432,5.548,5.814,3.345,3.101,2.419,0.49,0.63,0.308,0.265,0.132,0.067,0,0.069,0.136,0.908,1.511,1.755,0.906,0.615,0.912,1.675,1.73,1.147,2.557,3.093,3.394,2.707,1.712,0.666,0.491,0.268,0.038,0.166,1.168,3.389,6.04,5.834],"US_usd":[2.9416,1.917,1.8258,0.7614,0.6116,0.156,0.1994,0.0729,0.3823,0.5474,1.9418,2.5833,2.4509,1.403,1.3089,1.0353,0.2149,0.2762,0.1366,0.1167,0.0574,0.03,0,0.0314,0.0623,0.3668,0.6058,0.7006,0.3635,0.2426,0.3587,0.6627,0.6698,0.4415,0.9901,1.2177,1.3699,1.0994,0.6935,0.2644,0.1883,0.1069,0.0161,0.0632,0.4577,1.3577,2.5072,2.5261],"Brazil":[0.239,0.673,1.718,5.93,7.501,5.897,6.963,5.615,5.496,2.99,2.642,1.764,2.074,1.746,2.333,4.401,9.124,7.839,7.044,7.946,7.59,6.531,5.069,4.387,4.933,1.986,2.792,5.786,6.353,5.447,6.422,6.684,4.788,3.793,3.859,4.832,2.934,2.205,2.099,5.94,8.862,10.511,8.179,8.149,7.245,4.234,2.743,1.177],"Brazil_usd":[0.1114,0.2949,0.7527,2.598,3.2862,2.5838,3.0506,2.4599,2.4079,1.392,1.1574,0.8214,0.8676,0.7303,1.0011,1.8993,3.9735,3.506,3.1456,3.4336,3.2442,2.8532,2.2143,1.974,2.2247,0.8831,1.1385,2.3166,2.4705,2.03,2.392,2.5698,1.8728,1.496,1.5901,2.0157,1.2016,0.9056,0.8461,2.3181,3.3968,3.9545,3.0613,3.0658,2.7596,1.6991,1.1789,0.5183]},"usx":{"years":[2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"World":[40.224,48.216,57.852,55.38,46.415,52.388,64.571,53.051,57.332,48.719,52.328],"World_usd":[23.907,18.931,22.885,21.532,17.163,18.724,25.851,27.523,34.49,28.006,24.57],"China":[24.327,27.318,36.051,31.69,8.235,22.576,34.708,27.314,30.396,26.603,27.059],"China_usd":[14.476,10.523,14.203,12.225,3.119,7.989,14.203,14.102,17.872,15.164,12.761]}}/*SOYDATA:end*/;
+const REDUCE = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function caseSetup() {
+  if (!SOY) return;
+  const A = SOY.annual, MO = SOY.monthly, UX = SOY.usx;
+  const ai = y => A.years.indexOf(y), ui = y => UX.years.indexOf(y), mi = s => MO.months.indexOf(s);
+  const pct = (x, y) => (y / x - 1) * 100;
+  const f1 = x => fmt(x, 1);
+  const uv = (usd, mt) => usd / mt * 1000; // $ per tonne
+  // derived facts
+  const usShare17 = UX.China[ui(2017)] / UX.World[ui(2017)] * 100;
+  const season = (y0) => ["-11", "-12"].reduce((s, m) => s + MO.US[mi(y0 + m)], 0) + MO.US[mi((y0 + 1) + "-01")];
+  const s17 = season(2017), s18 = season(2018);
+  const brUp = pct(A.Brazil[ai(2017)], A.Brazil[ai(2018)]);
+  const usDown = pct(A.US[ai(2017)], A.US[ai(2018)]);
+  const otherUV = y => uv(UX.World_usd[ui(y)] - UX.China_usd[ui(y)], UX.World[ui(y)] - UX.China[ui(y)]);
+  const uv17 = otherUV(2017), uv18 = otherUV(2018);
+  const cnUS = y => uv(A.US_usd[ai(y)], A.US[ai(y)]), cnBR = y => uv(A.Brazil_usd[ai(y)], A.Brazil[ai(y)]);
+  const shareUS = y => A.US[ai(y)] / A.World[ai(y)] * 100;
+
+  document.getElementById("kpis").innerHTML = [
+    [fmt(usShare17, 0) + "%", "", "of all US soybean exports went to China in 2017", `${f1(UX.China[ui(2017)])} of ${f1(UX.World[ui(2017)])} Mt (US data)`],
+    [fmt(pct(s17, s18), 0) + "%", "down", "US beans landing in China, Nov–Jan, after the tariff", `${f1(s17)} Mt in 2017/18 → ${fmt(s18, 2)} Mt in 2018/19`],
+    ["+" + fmt(brUp, 0) + "%", "up", "Brazil’s soybean sales to China, 2017 → 2018", `${f1(A.Brazil[ai(2017)])} → ${f1(A.Brazil[ai(2018)])} Mt`],
+    [fmt(pct(uv17, uv18), 0) + "%", "down", "price per tonne of US beans sold to everyone else", `$${fmt(uv17, 0)} → $${fmt(uv18, 0)} per tonne, 2017 → 2018`]
+  ].map(([big, cls, what, sub]) => `<div class="kpi"><div class="big ${cls}">${big.replace("-", "−")}</div><div class="what">${what}</div><div class="sub">${sub}</div></div>`).join("");
+
+  document.getElementById("model-map").innerHTML = [
+    ["1 · Large importer", "China is a price setter",
+     `China imported <span class="num">${f1(A.World[ai(2017)])} Mt</span> of soybeans in 2017 and took <span class="num">${fmt(usShare17, 0)}%</span> of US exports. Losing a buyer that size shifts the whole market, so this is the large-country diagram with an upward-sloping ES curve.`],
+    ["2 · Area e", "US exporters paid part of the tariff",
+     `With China’s door shut, US beans had to find other buyers at lower prices: the unit value of US exports to everyone else fell from <span class="num">$${fmt(uv17, 0)}</span> to <span class="num">$${fmt(uv18, 0)}</span> per tonne. That is the price exporters receive falling from Pw to Pw′, which is area e.`],
+    ["3 · Beyond the model", "Trade diverted to Brazil",
+     `The tariff hit only US beans. Brazil’s sales to China rose <span class="num">${fmt(brUp, 0)}%</span>, and Brazilian beans, <span class="num">$${fmt(cnUS(2017) - cnBR(2017), 0)}/t</span> cheaper than US beans at China’s border in 2017, cost <span class="num">$${fmt(cnBR(2018) - cnUS(2018), 0)}/t</span> more in 2018. An untaxed third supplier earns a premium, which the two-country model leaves out.`],
+    ["4 · Who pays at home", "Buyers in China, taxpayers in the US",
+     `Chinese crushers making feed for pigs and poultry face the higher domestic price Pd, a loss of a + b + c + d. In Washington, the USDA’s Market Facilitation Program paid farmers to offset the damage: domestic support, the topic of Koo &amp; Kennedy ch. 9.`]
+  ].map(([k, h, p]) => `<article class="mm"><div class="k">${k}</div><h3>${h}</h3><p>${p}</p></article>`).join("");
+
+  document.getElementById("case-source").textContent = `Source: ${SOY.source} China records beans on arrival, about a month after US loading, so US-reported exports to China (${f1(UX.China[ui(2018)])} Mt in 2018) and China-reported imports from the US (${f1(A.US[ai(2018)])} Mt) differ by the late-2017 shipments that landed in early 2018. In 2017 the two agree closely (${f1(UX.China[ui(2017)])} vs ${f1(A.US[ai(2017)])} Mt). China’s 2017 monthly series sums to ${fmt(SOY.gap2017 * 100, 0)}% less than its revised annual total, so the 2017 monthly values understate the pre-tariff flows slightly; 2018–2020 monthly values add up exactly to the annual totals.`;
+
+  /* monthly chart */
+  const MW = 960, MH = 300, mm = { l: 54, r: 18, t: 34, b: 34 };
+  const n = MO.months.length;
+  const ymax = Math.ceil(Math.max(...MO.US, ...MO.Brazil) / 2) * 2;
+  const X = i => mm.l + i / (n - 1) * (MW - mm.l - mm.r), Y = v => MH - mm.b - v / ymax * (MH - mm.t - mm.b);
+  let s = "";
+  const iT = mi("2018-07"), iP = mi("2020-01");
+  s += `<rect class="band" x="${X(iT)}" y="${mm.t}" width="${X(iP) - X(iT)}" height="${MH - mm.t - mm.b}"></rect>`;
+  s += `<rect class="band-x" x="${X(iP)}" y="${mm.t}" width="${X(n - 1) - X(iP)}" height="${MH - mm.t - mm.b}"></rect>`;
+  for (let v = 0; v <= ymax; v += 2) s += `<line class="grid" x1="${mm.l}" x2="${MW - mm.r}" y1="${Y(v)}" y2="${Y(v)}"></line><text class="tick" x="${mm.l - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`;
+  s += `<text class="tick name" x="${mm.l - 6}" y="${mm.t - 12}" text-anchor="end">Mt</text>`;
+  MO.months.forEach((m, i) => { if (m.endsWith("-01") || m.endsWith("-07")) s += `<text class="tick" x="${X(i)}" y="${MH - mm.b + 16}" text-anchor="middle">${m.endsWith("-01") ? "Jan " + m.slice(0, 4) : "Jul"}</text>`; });
+  const pl = arr => arr.map((v, i) => X(i).toFixed(1) + "," + Y(v).toFixed(1)).join(" ");
+  s += `<polygon class="fa-us" points="${X(0)},${Y(0)} ${pl(MO.US)} ${X(n - 1)},${Y(0)}"></polygon>`;
+  s += `<polyline class="ml-br" points="${pl(MO.Brazil)}"></polyline><polyline class="ml-us" points="${pl(MO.US)}"></polyline>`;
+  s += `<line class="event" x1="${X(iT)}" x2="${X(iT)}" y1="${mm.t - 22}" y2="${MH - mm.b}"></line><text class="evlabel" x="${X(iT) + 6}" y="${mm.t - 10}">6 Jul 2018: China’s 25% tariff on US soybeans</text>`;
+  s += `<line class="event" x1="${X(iP)}" x2="${X(iP)}" y1="${mm.t - 22}" y2="${MH - mm.b}"></line><text class="evlabel" x="${X(iP) + 6}" y="${mm.t - 10}">15 Jan 2020: Phase One deal</text>`;
+  const iW = mi("2018-12");
+  s += `<text class="tick" x="${X(iW)}" y="${Y(0) - 10}" text-anchor="middle" style="fill:var(--bad);font-weight:600">the winter that never came</text>`;
+  s += `<g id="hover-m"></g><rect id="hit-m" x="${mm.l}" y="${mm.t}" width="${MW - mm.l - mm.r}" height="${MH - mm.t - mm.b}" fill="transparent" style="cursor:crosshair"></rect>`;
+  const svgM = document.getElementById("svg-monthly");
+  svgM.innerHTML = s;
+  const tipM = document.getElementById("tip-m");
+  svgM.addEventListener("pointermove", e => {
+    const pt = svgM.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svgM.getScreenCTM().inverse());
+    const i = Math.max(0, Math.min(n - 1, Math.round((p.x - mm.l) / (MW - mm.l - mm.r) * (n - 1))));
+    document.getElementById("hover-m").innerHTML = `<line class="cross" x1="${X(i)}" x2="${X(i)}" y1="${mm.t}" y2="${MH - mm.b}"></line><circle class="dot" cx="${X(i)}" cy="${Y(MO.Brazil[i])}" r="4.5" style="fill:var(--lane-br)"></circle><circle class="dot" cx="${X(i)}" cy="${Y(MO.US[i])}" r="4.5" style="fill:var(--lane-us)"></circle>`;
+    const d = new Date(MO.months[i] + "-15");
+    tipM.hidden = false;
+    tipM.innerHTML = `<div class="mono">${d.toLocaleString("en-US", { month: "long", year: "numeric" })}</div><div>United States <span class="mono">${fmt(MO.US[i], 2)} Mt</span></div><div>Brazil <span class="mono">${fmt(MO.Brazil[i], 2)} Mt</span></div><div>All suppliers <span class="mono">${fmt(MO.World[i], 2)} Mt</span></div>`;
+    const box = svgM.getBoundingClientRect(), sc = box.width / MW;
+    let left = X(i) * sc + 12; if (left + 190 > box.width) left = X(i) * sc - 190;
+    tipM.style.left = left + "px"; tipM.style.top = (mm.t * sc + 8) + "px";
+  });
+  svgM.addEventListener("pointerleave", () => { tipM.hidden = true; document.getElementById("hover-m").innerHTML = ""; });
+  document.getElementById("monthly-cap").textContent = `US beans normally reach China from October to February, after the US harvest; Brazil’s arrive from April to September. In the 2017/18 season the US winter peak brought ${f1(s17)} Mt (Nov–Jan); after the tariff the same three months brought ${fmt(s18, 2)} Mt. China’s total imports from the US fell ${fmt(-usDown, 0)}% in 2018. Hover to read the months.`;
+
+  /* animated shipping lanes */
+  const cv = document.getElementById("flow"), ctx = cv.getContext("2d");
+  const LANES = [
+    { key: "US", name: "United States", from: [0.13, 0.30], ctrl: [0.47, 0.0], col: "110,170,240" },
+    { key: "Brazil", name: "Brazil", from: [0.29, 0.66], ctrl: [0.58, 0.92], col: "52,201,143" },
+    { key: "Argentina", name: "Argentina", from: [0.21, 0.86], ctrl: [0.55, 1.1], col: "242,179,61" }
+  ];
+  const CN = [0.80, 0.47];
+  let year = 2014, W2 = 0, H2 = 0, playing = null, last = performance.now();
+  const cur = { US: A.US[0], Brazil: A.Brazil[0], Argentina: A.Argentina[0], World: A.World[0] };
+  LANES.forEach(l => { l.p = []; });
+  const rng = (() => { let x = 7; return () => (x = (x * 16807) % 2147483647) / 2147483647; })();
+  const stars = Array.from({ length: 90 }, () => [rng(), rng(), rng()]);
+  function size() {
+    const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    W2 = r.width; H2 = r.height; cv.width = W2 * dpr; cv.height = H2 * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  const bez = (l, t) => {
+    const P0 = [l.from[0] * W2, l.from[1] * H2], C = [l.ctrl[0] * W2, l.ctrl[1] * H2], P1 = [CN[0] * W2, CN[1] * H2], u = 1 - t;
+    return [u * u * P0[0] + 2 * u * t * C[0] + t * t * P1[0], u * u * P0[1] + 2 * u * t * C[1] + t * t * P1[1],
+            2 * u * (C[0] - P0[0]) + 2 * t * (P1[0] - C[0]), 2 * u * (C[1] - P0[1]) + 2 * t * (P1[1] - C[1])];
+  };
+  const widthOf = mt => 2 + mt * 0.42;
+  function setYear(y) {
+    year = y;
+    document.getElementById("flow-year").textContent = y;
+    document.getElementById("flow-range").value = y;
+    const i = ai(y);
+    const tariff = y === 2018 || y === 2019 ? "The 25% tariff is in force." : y >= 2020 ? "Phase One deal signed; China grants tariff exclusions to buyers." : "No tariff yet.";
+    document.getElementById("flow-cap").innerHTML = `<b>${y}.</b> China imported ${f1(A.World[i])} Mt of soybeans: ${f1(A.US[i])} Mt from the United States (${fmt(shareUS(y), 0)}%), ${f1(A.Brazil[i])} Mt from Brazil and ${f1(A.Argentina[i])} Mt from Argentina. ${tariff} Lane width and the number of moving dots scale with tonnes.`;
+  }
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const i = ai(year), k = REDUCE ? 1 : 0.07;
+    for (const key of ["US", "Brazil", "Argentina", "World"]) cur[key] += (A[key][i] - cur[key]) * k;
+    const g = ctx.createRadialGradient(W2 * 0.55, H2 * 0.45, 20, W2 * 0.55, H2 * 0.45, W2 * 0.75);
+    g.addColorStop(0, "#123a5c"); g.addColorStop(1, "#06121f");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W2, H2);
+    // graticule and stars for an ocean-at-night feel
+    ctx.strokeStyle = "rgba(160,200,235,0.07)"; ctx.lineWidth = 1;
+    for (let j = 1; j < 8; j++) { ctx.beginPath(); ctx.ellipse(W2 * 0.5, H2 * 0.5, W2 * 0.07 * j, H2 * 0.62, 0, 0, Math.PI * 2); ctx.stroke(); }
+    for (let j = 1; j < 6; j++) { ctx.beginPath(); ctx.moveTo(0, H2 * j / 6); ctx.lineTo(W2, H2 * j / 6); ctx.stroke(); }
+    for (const [sx, sy, sz] of stars) { ctx.fillStyle = `rgba(220,235,250,${0.08 + sz * 0.18})`; ctx.fillRect(sx * W2, sy * H2, 1.2, 1.2); }
+    for (const l of LANES) {
+      const mt = cur[l.key], w = widthOf(mt);
+      ctx.lineCap = "round";
+      for (const [lw, al] of [[w + 10, 0.06], [w, 0.22], [1.4, 0.55]]) {
+        ctx.strokeStyle = `rgba(${l.col},${al})`; ctx.lineWidth = lw; ctx.beginPath();
+        for (let t = 0; t <= 1.0001; t += 0.02) { const [x, y] = bez(l, t); t === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+        ctx.stroke();
+      }
+      const want = Math.round(mt * 1.5);
+      while (l.p.length < want) l.p.push({ t: rng(), o: rng() * 2 - 1, v: 0.07 + rng() * 0.05 });
+      if (l.p.length > want) l.p.length = want;
+      for (const p of l.p) {
+        if (!REDUCE) { p.t += p.v * dt; if (p.t > 1) { p.t -= 1; p.o = rng() * 2 - 1; } }
+        const [x, y, dx, dy] = bez(l, p.t), len = Math.hypot(dx, dy) || 1;
+        const ox = -dy / len * p.o * w / 2, oy = dx / len * p.o * w / 2;
+        const fade = Math.min(1, p.t * 8, (1 - p.t) * 8);
+        ctx.fillStyle = `rgba(${l.col},${0.9 * fade})`;
+        ctx.beginPath(); ctx.arc(x + ox, y + oy, 1.9, 0, Math.PI * 2); ctx.fill();
+      }
+      const [nx, ny] = [l.from[0] * W2, l.from[1] * H2], r = 5 + Math.sqrt(mt) * 1.5;
+      ctx.fillStyle = `rgba(${l.col},0.95)`; ctx.beginPath(); ctx.arc(nx, ny, r, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#eef4f9"; ctx.font = "600 14px 'IBM Plex Sans', sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(l.name, nx, ny - r - 9);
+      ctx.fillStyle = "#a9bfd1"; ctx.font = "500 12.5px 'IBM Plex Mono', monospace";
+      ctx.fillText(fmt(A[l.key][i], 1) + " Mt", nx, ny + r + 17);
+    }
+    // tariff wall on the US lane
+    if (year >= 2018) {
+      const [x, y, dx, dy] = bez(LANES[0], 0.8), len = Math.hypot(dx, dy), nx = -dy / len, ny = dx / len;
+      const half = widthOf(cur.US) / 2 + 16, on = year <= 2019;
+      const pulse = REDUCE ? 1 : 0.75 + 0.25 * Math.sin(now / 260);
+      ctx.strokeStyle = on ? `rgba(255,90,90,${pulse})` : "rgba(255,120,120,0.45)";
+      ctx.lineWidth = on ? 5 : 3; ctx.setLineDash(on ? [] : [6, 5]);
+      ctx.beginPath(); ctx.moveTo(x - nx * half, y - ny * half); ctx.lineTo(x + nx * half, y + ny * half); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = on ? "#ff8a8a" : "#e3a3a3"; ctx.font = "600 13px 'IBM Plex Sans', sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(on ? "25% tariff" : "tariff exclusions", x + nx * (half + 12), y + ny * (half + 12) - 4);
+    }
+    const [cx, cy] = [CN[0] * W2, CN[1] * H2], cr = 10 + Math.sqrt(cur.World) * 1.9;
+    const halo = ctx.createRadialGradient(cx, cy, cr * 0.4, cx, cy, cr * 2.2);
+    halo.addColorStop(0, "rgba(255,215,140,0.35)"); halo.addColorStop(1, "rgba(255,215,140,0)");
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(cx, cy, cr * 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffd98c"; ctx.beginPath(); ctx.arc(cx, cy, cr, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#0b1b2b"; ctx.font = "700 14px 'IBM Plex Sans', sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("China", cx, cy - 2);
+    ctx.font = "600 12.5px 'IBM Plex Mono', monospace"; ctx.fillText(fmt(A.World[i], 1) + " Mt", cx, cy + 14);
+    requestAnimationFrame(frame);
+  }
+  function stopFlow() { clearInterval(playing); playing = null; document.getElementById("flow-play").textContent = "Play 2014–2024"; }
+  document.getElementById("flow-play").addEventListener("click", () => {
+    if (playing) { stopFlow(); return; }
+    if (year >= A.years[A.years.length - 1]) setYear(A.years[0]);
+    document.getElementById("flow-play").textContent = "Pause";
+    playing = setInterval(() => { if (year >= A.years[A.years.length - 1]) { stopFlow(); return; } setYear(year + 1); }, 1700);
+  });
+  document.getElementById("flow-range").addEventListener("input", e => { stopFlow(); setYear(+e.target.value); });
+  window.addEventListener("resize", size);
+  size(); setYear(2017);
+  for (const key of ["US", "Brazil", "Argentina", "World"]) cur[key] = A[key][ai(2017)];
+  requestAnimationFrame(frame);
+}
+
+/* ---------- practice: large-country tariff ---------- */
+// Home import demand Qm = 140 - 2P (from Qd = 160 - 1.5P, Qs = 20 + 0.5P); foreign excess supply Qx = k + 2P.
+function solvePractice(k, t) {
+  const Q0 = 70 + k / 2, P0 = 70 - Q0 / 2;
+  const Q1 = Q0 - t, Pf = -k / 2 + Q1 / 2, Pd = Pf + t;
+  const Qd0 = IMP.D(P0), Qs0 = IMP.S(P0), Qd1 = IMP.D(Pd), Qs1 = IMP.S(Pd), dP = Pd - P0;
+  const b = 0.5 * dP * (Qs1 - Qs0), a = dP * Qs0 + b, d = 0.5 * dP * (Qd0 - Qd1);
+  const c = dP * Q1, e = (P0 - Pf) * Q1;
+  return { k, t, P0, Q0, Q1, Pf, Pd, Qd0, Qs0, Qd1, Qs1, dP, a, b, c, d, e, cs: a + b + c + d, net: e - (b + d), better: e - (b + d) > 0 ? "yes" : "no" };
+}
+const PR_VARIANTS = [];
+for (const k of [-60, -40, -80, -50, -70]) for (const t of [6, 8, 10, 12, 14]) if (70 + k / 2 - t > 4) PR_VARIANTS.push([k, t]);
+let pr = solvePractice(-60, 10);
+const kTxt = k => (k < 0 ? "−" + Math.abs(k) : String(k));
+const STAGES = [
+  { tag: "Stage 1 · free trade", task: "Find the world price and the quantity traded before any tariff.",
+    fields: [["P0", "World price Pw ($)"], ["Q0", "Quantity traded Q<sub>T</sub>"]],
+    hint: p => `Trade clears where China’s import demand equals US excess supply: set ${m(`140 − 2P = ${kTxt(p.k)} + 2P`)} and solve for P, then plug P into either curve.`,
+    show: p => [`${m(`140 − 2P = ${kTxt(p.k)} + 2P ⇒ 4P = ${fmt(140 - p.k)} ⇒ Pw = ${usd(p.P0)}`)}`, `${m(`Q<sub>T</sub> = 140 − 2(${fmt(p.P0)}) = ${fmt(p.Q0)}`)}`] },
+  { tag: "Stage 2 · impose the tariff", task: "Find the new quantity traded, the price US exporters receive, and the price Chinese buyers pay.",
+    fields: [["Q1", "Quantity traded Q<sub>T</sub>′"], ["Pf", "Exporters receive Pw′ ($)"], ["Pd", "Buyers in China pay ($)"]],
+    hint: p => `Write both curves as prices: ${m("ED: P = 70 − ½Q")} and ${m(`ES: P = ${fmt(-p.k / 2)} + ½Q`)}. The tariff lifts the supply curve buyers face by t: set ${m(`70 − ½Q = (${fmt(-p.k / 2)} + ${fmt(p.t)}) + ½Q`)}. Exporters get the ES price at the new Q; buyers pay that plus t.`,
+    show: p => [`${m(`70 − ½Q = ${fmt(-p.k / 2 + p.t)} + ½Q ⇒ Q<sub>T</sub>′ = ${fmt(p.Q1)}`)}`, `${m(`Pw′ = ${fmt(-p.k / 2)} + ½(${fmt(p.Q1)}) = ${usd(p.Pf)}`)}`, `${m(`Pd = ${usd(p.Pf)} + ${usd(p.t)} = ${usd(p.Pd)}`)}. Buyers pay ${usd(p.Pd - p.P0)} more; exporters get ${usd(p.P0 - p.Pf)} less.`] },
+  { tag: "Stage 3 · inside China’s market", task: "Find consumption and production before (at Pw) and after (at the new domestic price).",
+    fields: [["Qd0", "Qd at Pw"], ["Qs0", "Qs at Pw"], ["Qd1", "Qd at the tariff price"], ["Qs1", "Qs at the tariff price"]],
+    hint: () => `Plug each price into ${m("Qd = 160 − 1.5P")} and ${m("Qs = 20 + 0.5P")}. Check: Qd − Qs must equal the quantity traded.`,
+    show: p => [`${m(`Qd = 160 − 1.5(${fmt(p.P0)}) = ${fmt(p.Qd0)}`)}, ${m(`Qs = 20 + 0.5(${fmt(p.P0)}) = ${fmt(p.Qs0)}`)}`, `${m(`Qd′ = 160 − 1.5(${fmt(p.Pd)}) = ${fmt(p.Qd1)}`)}, ${m(`Qs′ = 20 + 0.5(${fmt(p.Pd)}) = ${fmt(p.Qs1)}`)}`] },
+  { tag: "Stage 4 · who wins, who loses", task: "Measure each area, then decide whether China as a whole is better off.",
+    fields: [["a", "a = producer gain ($)"], ["b", "b = production DWL ($)"], ["d", "d = consumption DWL ($)"], ["c", "c = revenue paid by Chinese buyers ($)"], ["e", "e = revenue paid by US exporters ($)"], ["cs", "Consumer loss a+b+c+d ($)"], ["net", "Net welfare e − (b+d) ($)"], ["better", "Is China better off?"]],
+    hint: () => `Let ΔP = Pd − Pw. ${m("a = ΔP·Qs + ½ΔP(Qs′ − Qs)")}; ${m("b = ½ΔP(Qs′ − Qs)")}; ${m("d = ½ΔP(Qd − Qd′)")}; ${m("c = ΔP·Q<sub>T</sub>′")}; ${m("e = (Pw − Pw′)·Q<sub>T</sub>′")}. Consumer loss excludes e.`,
+    show: p => [`ΔP = ${usd(p.dP)}. ${m(`a = ${fmt(p.dP)}×${fmt(p.Qs0)} + ½(${fmt(p.Qs1 - p.Qs0)})(${fmt(p.dP)}) = ${usd(p.a)}`)}`, `${m(`b = ${usd(p.b)}`)}, ${m(`d = ½(${fmt(p.Qd0 - p.Qd1)})(${fmt(p.dP)}) = ${usd(p.d)}`)}`, `${m(`c = ${fmt(p.dP)}×${fmt(p.Q1)} = ${usd(p.c)}`)}, ${m(`e = ${fmt(p.P0 - p.Pf)}×${fmt(p.Q1)} = ${usd(p.e)}`)}`, `${m(`CS loss = ${usd(p.cs)}`)}; ${m(`net = ${usd(p.e)} − ${usd(p.b + p.d)} = ${signed(p.net)}`)}: China is ${p.net > 0 ? "better" : "worse"} off.`] }
+];
+function parseNum(s) { const v = parseFloat(String(s).replace(/[^0-9.\-−]/g, "").replace("−", "-")); return isFinite(v) ? v : null; }
+function prScore() {
+  const all = document.querySelectorAll("#pr-stages [data-key]");
+  const ok = document.querySelectorAll("#pr-stages .ok[data-key]").length;
+  document.getElementById("pr-score").textContent = `${ok} / ${all.length} correct`;
+}
+function renderPractice() {
+  document.getElementById("pr-given").innerHTML =
+    `<b>China (large importer) taxes US soybeans</b> · stylized numbers<br>China demand ${m("Qd = 160 − 1.5P")}, supply ${m("Qs = 20 + 0.5P")}<br>⇒ import demand ${m("Qm = 140 − 2P")}<br>US excess supply ${m(`Qx = ${kTxt(pr.k)} + 2P`)}<br>Specific tariff ${m(`t = ${usd(pr.t)}`)} per unit`;
+  document.getElementById("pr-sim").hidden = pr.k !== -60;
+  document.getElementById("pr-stages").innerHTML = STAGES.map((sg, i) => `<article class="stage" data-stage="${i}">
+    <div class="tag">${sg.tag}</div><p class="task">${sg.task}</p>
+    <div class="fields">${sg.fields.map(([key, lab]) => key === "better"
+      ? `<label for="pr-${key}">${lab}</label><select id="pr-${key}" data-key="${key}"><option value="">choose</option><option value="yes">Yes</option><option value="no">No</option></select><span class="mark" id="mk-${key}"></span>`
+      : `<label for="pr-${key}">${lab}</label><input id="pr-${key}" data-key="${key}" inputmode="decimal" autocomplete="off"><span class="mark" id="mk-${key}"></span>`).join("")}</div>
+    <div class="actions"><button type="button" class="btn solid" data-act="check">Check</button><button type="button" class="btn" data-act="hint">Hint</button><button type="button" class="btn" data-act="show">Show the working</button></div>
+    <div class="hint" hidden></div><div class="reveal" hidden></div></article>`).join("");
+  document.querySelectorAll("#pr-stages .stage").forEach(el => {
+    const sg = STAGES[+el.dataset.stage];
+    el.addEventListener("click", e => {
+      const b = e.target.closest("button[data-act]"); if (!b) return;
+      if (b.dataset.act === "hint") { const h = el.querySelector(".hint"); h.innerHTML = sg.hint(pr); h.hidden = !h.hidden; }
+      if (b.dataset.act === "show") { const r = el.querySelector(".reveal"); r.innerHTML = sg.show(pr).map(x => `<div>${x}</div>`).join(""); r.hidden = !r.hidden; }
+      if (b.dataset.act === "check") {
+        for (const [key] of sg.fields) {
+          const inp = document.getElementById("pr-" + key), mk = document.getElementById("mk-" + key);
+          let good;
+          if (key === "better") good = inp.value === pr.better;
+          else { const v = parseNum(inp.value), ans = pr[key]; good = v !== null && Math.abs(v - ans) <= Math.max(0.011, Math.abs(ans) * 0.0005); }
+          const empty = inp.value.trim() === "";
+          inp.classList.toggle("ok", good); inp.classList.toggle("no", !good && !empty);
+          mk.className = "mark " + (good ? "ok" : empty ? "" : "no");
+          mk.textContent = good ? "✓" : empty ? "" : "✗";
+          mk.setAttribute("aria-label", good ? "correct" : empty ? "" : "incorrect");
+        }
+        prScore();
+      }
+    });
+  });
+  prScore();
+}
+document.getElementById("pr-new").addEventListener("click", () => {
+  let next;
+  do { next = PR_VARIANTS[Math.floor(Math.random() * PR_VARIANTS.length)]; } while (next[0] === pr.k && next[1] === pr.t);
+  pr = solvePractice(next[0], next[1]); renderPractice();
+});
+document.getElementById("pr-lecture").addEventListener("click", () => { pr = solvePractice(-60, 10); renderPractice(); });
+document.getElementById("pr-sim").addEventListener("click", () => { st = { ...DEFAULT, policy: "tariff", size: "large", tMode: "specific", t: pr.t }; render(); document.getElementById("lab").scrollIntoView(); });
+
+caseSetup();
+renderProblems();
+renderPractice();
+renderPitfalls();
+renderQuiz();
+render();
+})();
+</script>
+</body>
+</html>
