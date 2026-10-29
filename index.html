@@ -185,17 +185,17 @@ ol.steps .mono { font-size: .85rem; }
 :root { --lane-us: #2a78d6; --lane-br: #1a9e6e; }
 .eyebrow-s { font-family: var(--font-mono); font-size: .78rem; color: var(--area-c); letter-spacing: .05em; text-transform: uppercase; }
 .case-grid { display: grid; grid-template-columns: 1fr 290px; gap: 16px; align-items: stretch; }
-/* the ocean panel is a fixed night-sea world in both themes */
-.ocean { position: relative; border-radius: 12px; overflow: hidden; background: #08182a; color: #e6eef5; min-height: 340px; display: flex; flex-direction: column; }
+/* the shipping map is a pale chart-paper sea, light like the rest of the page */
+.ocean { position: relative; border-radius: 12px; overflow: hidden; background: #eef5fb; color: var(--ink); border: 1px solid var(--rule); min-height: 340px; display: flex; flex-direction: column; }
 .ocean canvas { width: 100%; flex: 1 1 auto; min-height: 420px; display: block; }
 .ocean-ui { position: absolute; top: 14px; right: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-.ocean .year { font: 600 3.2rem/1 var(--font-display); color: #f4f8fb; letter-spacing: .01em; text-shadow: 0 2px 18px rgba(0,0,0,.5); }
+.ocean .year { font: 600 3.2rem/1 var(--font-display); color: var(--ink); letter-spacing: .01em; }
 .ocean-ctl { display: flex; gap: 10px; align-items: center; }
-.ocean-ctl input { width: 170px; accent-color: #ff6b6b; }
-.obtn { background: rgba(255,255,255,.1); color: #f4f8fb; border: 1px solid rgba(255,255,255,.35); border-radius: 6px; padding: 5px 12px; font: 500 .85rem var(--font-body); cursor: pointer; }
-.obtn:hover { background: rgba(255,255,255,.2); }
-.ocean-cap { font-size: .86rem; color: #b9cad8; padding: 10px 16px 14px; border-top: 1px solid rgba(255,255,255,.08); }
-.ocean-cap b { color: #f4f8fb; }
+.ocean-ctl input { width: 170px; accent-color: var(--bad); }
+.obtn { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; padding: 5px 12px; font: 500 .85rem var(--font-body); cursor: pointer; }
+.obtn:hover { background: var(--accent-soft); }
+.ocean-cap { font-size: .86rem; color: var(--ink-2); padding: 10px 16px 14px; border-top: 1px solid var(--rule); background: var(--surface); }
+.ocean-cap b { color: var(--ink); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .kpis { display: flex; flex-direction: column; gap: 12px; }
 .kpi { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
@@ -1465,10 +1465,11 @@ function caseSetup() {
 
   /* animated shipping lanes */
   const cv = document.getElementById("flow"), ctx = cv.getContext("2d");
+  const haloText = (txt, x, y) => { ctx.lineJoin = "round"; ctx.lineWidth = 4; ctx.strokeStyle = "rgba(251,253,255,0.95)"; ctx.strokeText(txt, x, y); ctx.fillText(txt, x, y); };
   const LANES = [
-    { key: "US", name: "United States", from: [0.13, 0.30], ctrl: [0.47, 0.0], col: "110,170,240" },
-    { key: "Brazil", name: "Brazil", from: [0.29, 0.66], ctrl: [0.58, 0.92], col: "52,201,143" },
-    { key: "Argentina", name: "Argentina", from: [0.21, 0.86], ctrl: [0.55, 1.1], col: "242,179,61" }
+    { key: "US", name: "United States", from: [0.13, 0.30], ctrl: [0.47, 0.0], col: "42,120,214" },
+    { key: "Brazil", name: "Brazil", from: [0.29, 0.66], ctrl: [0.58, 0.92], col: "26,158,110" },
+    { key: "Argentina", name: "Argentina", from: [0.21, 0.86], ctrl: [0.55, 1.1], col: "196,128,0" }
   ];
   const CN = [0.80, 0.47];
   let year = 2014, W2 = 0, H2 = 0, playing = null, last = performance.now();
@@ -1502,17 +1503,17 @@ function caseSetup() {
     const i = ai(year), k = REDUCE ? 1 : 0.07;
     for (const key of ["US", "Brazil", "Argentina", "World"]) cur[key] += (A[key][i] - cur[key]) * k;
     const g = ctx.createRadialGradient(W2 * 0.55, H2 * 0.45, 20, W2 * 0.55, H2 * 0.45, W2 * 0.75);
-    g.addColorStop(0, "#123a5c"); g.addColorStop(1, "#06121f");
+    g.addColorStop(0, "#fbfdff"); g.addColorStop(1, "#dce9f4");
     ctx.fillStyle = g; ctx.fillRect(0, 0, W2, H2);
     // graticule and stars for an ocean-at-night feel
-    ctx.strokeStyle = "rgba(160,200,235,0.07)"; ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(29,58,95,0.08)"; ctx.lineWidth = 1;
     for (let j = 1; j < 8; j++) { ctx.beginPath(); ctx.ellipse(W2 * 0.5, H2 * 0.5, W2 * 0.07 * j, H2 * 0.62, 0, 0, Math.PI * 2); ctx.stroke(); }
     for (let j = 1; j < 6; j++) { ctx.beginPath(); ctx.moveTo(0, H2 * j / 6); ctx.lineTo(W2, H2 * j / 6); ctx.stroke(); }
-    for (const [sx, sy, sz] of stars) { ctx.fillStyle = `rgba(220,235,250,${0.08 + sz * 0.18})`; ctx.fillRect(sx * W2, sy * H2, 1.2, 1.2); }
+    for (const [sx, sy, sz] of stars) { ctx.fillStyle = `rgba(29,58,95,${0.05 + sz * 0.08})`; ctx.fillRect(sx * W2, sy * H2, 1.2, 1.2); }
     for (const l of LANES) {
       const mt = cur[l.key], w = widthOf(mt);
       ctx.lineCap = "round";
-      for (const [lw, al] of [[w + 10, 0.06], [w, 0.22], [1.4, 0.55]]) {
+      for (const [lw, al] of [[w + 10, 0.08], [w, 0.26], [1.4, 0.75]]) {
         ctx.strokeStyle = `rgba(${l.col},${al})`; ctx.lineWidth = lw; ctx.beginPath();
         for (let t = 0; t <= 1.0001; t += 0.02) { const [x, y] = bez(l, t); t === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
         ctx.stroke();
@@ -1530,27 +1531,27 @@ function caseSetup() {
       }
       const [nx, ny] = [l.from[0] * W2, l.from[1] * H2], r = 5 + Math.sqrt(mt) * 1.5;
       ctx.fillStyle = `rgba(${l.col},0.95)`; ctx.beginPath(); ctx.arc(nx, ny, r, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#eef4f9"; ctx.font = "600 14px 'IBM Plex Sans', sans-serif"; ctx.textAlign = "center";
-      ctx.fillText(l.name, nx, ny - r - 9);
-      ctx.fillStyle = "#a9bfd1"; ctx.font = "500 12.5px 'IBM Plex Mono', monospace";
-      ctx.fillText(fmt(A[l.key][i], 1) + " Mt", nx, ny + r + 17);
+      ctx.fillStyle = "#13202a"; ctx.font = "600 14px 'IBM Plex Sans', sans-serif"; ctx.textAlign = "center";
+      haloText(l.name, nx, ny - r - 9);
+      ctx.fillStyle = "#44535e"; ctx.font = "500 12.5px 'IBM Plex Mono', monospace";
+      haloText(fmt(A[l.key][i], 1) + " Mt", nx - 10, ny + r + 17);
     }
     // tariff wall on the US lane
     if (year >= 2018) {
       const [x, y, dx, dy] = bez(LANES[0], 0.8), len = Math.hypot(dx, dy), nx = -dy / len, ny = dx / len;
       const half = widthOf(cur.US) / 2 + 16, on = year <= 2019;
       const pulse = REDUCE ? 1 : 0.75 + 0.25 * Math.sin(now / 260);
-      ctx.strokeStyle = on ? `rgba(255,90,90,${pulse})` : "rgba(255,120,120,0.45)";
+      ctx.strokeStyle = on ? `rgba(208,59,59,${pulse})` : "rgba(208,59,59,0.45)";
       ctx.lineWidth = on ? 5 : 3; ctx.setLineDash(on ? [] : [6, 5]);
       ctx.beginPath(); ctx.moveTo(x - nx * half, y - ny * half); ctx.lineTo(x + nx * half, y + ny * half); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = on ? "#ff8a8a" : "#e3a3a3"; ctx.font = "600 13px 'IBM Plex Sans', sans-serif"; ctx.textAlign = "center";
-      ctx.fillText(on ? "25% tariff" : "tariff exclusions", x + nx * (half + 12), y + ny * (half + 12) - 4);
+      ctx.fillStyle = on ? "#b42d2d" : "#b06a6a"; ctx.font = "600 13px 'IBM Plex Sans', sans-serif"; ctx.textAlign = "center";
+      haloText(on ? "25% tariff" : "tariff exclusions", x - nx * (half + 14), y - ny * (half + 14) + 4);
     }
     const [cx, cy] = [CN[0] * W2, CN[1] * H2], cr = 10 + Math.sqrt(cur.World) * 1.9;
     const halo = ctx.createRadialGradient(cx, cy, cr * 0.4, cx, cy, cr * 2.2);
-    halo.addColorStop(0, "rgba(255,215,140,0.35)"); halo.addColorStop(1, "rgba(255,215,140,0)");
+    halo.addColorStop(0, "rgba(237,161,0,0.30)"); halo.addColorStop(1, "rgba(237,161,0,0)");
     ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(cx, cy, cr * 2.2, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#ffd98c"; ctx.beginPath(); ctx.arc(cx, cy, cr, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#f6c453"; ctx.beginPath(); ctx.arc(cx, cy, cr, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#0b1b2b"; ctx.font = "700 14px 'IBM Plex Sans', sans-serif"; ctx.textAlign = "center";
     ctx.fillText("China", cx, cy - 2);
     ctx.font = "600 12.5px 'IBM Plex Mono', monospace"; ctx.fillText(fmt(A.World[i], 1) + " Mt", cx, cy + 14);
