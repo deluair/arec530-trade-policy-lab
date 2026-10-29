@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trade Policy Lab</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d3a5f'/%3E%3Cpath d='M6 8 L26 24 M6 24 L26 8' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
@@ -38,6 +39,10 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { margin: 0; }
+html { scroll-behavior: smooth; }
+section { scroll-margin-top: 12px; }
+.framed-only { display: none; }
+html.framed .framed-only { display: inline-flex; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -292,6 +297,7 @@ footer { padding: 30px 0 40px; color: var(--muted); font-size: .85rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; }
+  html { scroll-behavior: auto; }
 }
 </style>
 </head>
@@ -316,7 +322,7 @@ footer { padding: 30px 0 40px; color: var(--muted); font-size: .85rem; }
 <header class="top">
   <div class="wrap top-grid">
     <div>
-      <div class="eyebrow">AREC 530 · Agricultural trade policy</div>
+      <div class="eyebrow">AREC 530 · Agricultural trade policy <a class="btn framed-only" href="https://deluair.github.io/arec530-trade-policy-lab/" target="_blank" rel="noopener" style="margin-left:10px;padding:2px 10px;font-size:.78rem;text-decoration:none">Open full page in a new tab</a></div>
       <h1>Trade Policy Lab</h1>
       <p class="lede">An interactive companion to the lecture notes <i>Trade Policies: Importing and Exporting Countries</i> (A. Muhammad). Move a policy lever and watch prices, trade volumes and the welfare areas a, b, c, d and e respond in the home market and the trade market at once. Every number on this page is computed live from the linear model used in the slides.</p>
       <nav class="toc" aria-label="Sections">
@@ -1488,7 +1494,10 @@ function caseSetup() {
     const tariff = y === 2018 || y === 2019 ? "The 25% tariff is in force." : y >= 2020 ? "Phase One deal signed; China grants tariff exclusions to buyers." : "No tariff yet.";
     document.getElementById("flow-cap").innerHTML = `<b>${y}.</b> China imported ${f1(A.World[i])} Mt of soybeans: ${f1(A.US[i])} Mt from the United States (${fmt(shareUS(y), 0)}%), ${f1(A.Brazil[i])} Mt from Brazil and ${f1(A.Argentina[i])} Mt from Argentina. ${tariff} Lane width and the number of moving dots scale with tonnes.`;
   }
+  let onScreen = true, looping = false;
+  function loop() { if (!looping && onScreen) { looping = true; last = performance.now(); requestAnimationFrame(frame); } }
   function frame(now) {
+    if (!onScreen) { looping = false; return; }
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     const i = ai(year), k = REDUCE ? 1 : 0.07;
     for (const key of ["US", "Brazil", "Argentina", "World"]) cur[key] += (A[key][i] - cur[key]) * k;
@@ -1547,6 +1556,7 @@ function caseSetup() {
     ctx.font = "600 12.5px 'IBM Plex Mono', monospace"; ctx.fillText(fmt(A.World[i], 1) + " Mt", cx, cy + 14);
     requestAnimationFrame(frame);
   }
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => { onScreen = es[0].isIntersecting; loop(); }, { rootMargin: '80px' }).observe(cv);
   function stopFlow() { clearInterval(playing); playing = null; document.getElementById("flow-play").textContent = "Play 2014–2024"; }
   document.getElementById("flow-play").addEventListener("click", () => {
     if (playing) { stopFlow(); return; }
@@ -1558,7 +1568,7 @@ function caseSetup() {
   window.addEventListener("resize", size);
   size(); setYear(2017);
   for (const key of ["US", "Brazil", "Argentina", "World"]) cur[key] = A[key][ai(2017)];
-  requestAnimationFrame(frame);
+  loop();
 }
 
 /* ---------- practice: large-country tariff ---------- */
@@ -1642,6 +1652,7 @@ document.getElementById("pr-new").addEventListener("click", () => {
 document.getElementById("pr-lecture").addEventListener("click", () => { pr = solvePractice(-60, 10); renderPractice(); });
 document.getElementById("pr-sim").addEventListener("click", () => { st = { ...DEFAULT, policy: "tariff", size: "large", tMode: "specific", t: pr.t }; render(); document.getElementById("lab").scrollIntoView(); });
 
+try { if (window.self !== window.top) document.documentElement.classList.add('framed'); } catch (e) { document.documentElement.classList.add('framed'); }
 caseSetup();
 renderProblems();
 renderPractice();
